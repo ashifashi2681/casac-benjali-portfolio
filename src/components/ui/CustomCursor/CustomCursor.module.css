@@ -1,0 +1,67 @@
+.cursor {
+  --cursor-size: 48px;
+  --point-size: 6px;
+
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  width: var(--cursor-size);
+  height: var(--cursor-size);
+
+  border: 1px solid currentColor;
+  border-radius: 50%;
+
+  pointer-events: none;
+
+  z-index: 2147483647;
+
+  opacity: 0;
+  visibility: hidden;
+
+  transform: translate3d(-50%, -50%, 0);
+
+  will-change:
+    transform,
+    width,
+    height,
+    opacity;
+
+  contain: layout style paint;
+
+  /*
+   * Prevent the browser from creating unexpected selection/
+   * interaction behavior around the cursor.
+   */
+  user-select: none;
+  -webkit-user-select: none;
+
+  /*
+   * Helps keep the cursor visually sharp.
+   */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+.point {
+  position: absolute;
+
+  top: 50%;
+  left: 50%;
+
+  width: var(--point-size);
+  height: var(--point-size);
+
+  border-radius: 50%;
+
+  background: currentColor;
+
+  pointer-events: none;
+
+  transform: translate3d(-50%, -50%, 0);
+
+  will-change: transform;
+
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
