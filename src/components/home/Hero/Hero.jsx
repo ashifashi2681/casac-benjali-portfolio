@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 
 import { useGsap } from "@/hooks/useGsap";
 import { useMediaQuery } from "@/hooks/useMediaQuery";
@@ -8,68 +8,126 @@ import { gsap, ScrollTrigger } from "@/animations/gsap";
 
 import styles from "./Hero.module.css";
 
+const DEFAULTS = {
+	frameCount: 293,
+
+	framePath: "/images/hero-sequence/ezgif-frame-",
+
+	frameExtension: ".jpg",
+
+	framePadding: 3,
+
+	desktopScrollDistance: 450,
+
+	mobileScrollDistance: 300,
+
+	scrub: 0.8,
+
+	captionFadeDuration: 0.08,
+
+	captionY: 45,
+
+	maxConcurrentRequests: 8,
+};
+
 const DEFAULT_CAPTIONS = [
 	{
 		eyebrow: "01 / VISION",
+
 		title: "Turn Ambition Into Impact.",
+
 		description:
 			"Build a clear vision, create meaningful momentum, and move forward with purpose.",
 	},
+
 	{
 		eyebrow: "02 / STRATEGY",
+
 		title: "Strategy Creates Momentum.",
+
 		description:
 			"Transform ideas into focused strategies that create measurable business growth.",
 	},
+
 	{
 		eyebrow: "03 / RESULTS",
+
 		title: "Create Work That Matters.",
+
 		description:
 			"Lead with confidence, make better decisions, and create lasting results.",
 	},
 ];
 
-const DEFAULTS = {
-	/*
-	 * Scroll distance relative to viewport height.
-	 *
-	 * 400vh means the user scrolls through roughly 4 viewport heights
-	 * while the hero remains pinned.
-	 */
-	desktopScrollDistance: 1300,
+/*
+|--------------------------------------------------------------------------
+| HELPERS
+|--------------------------------------------------------------------------
+*/
 
-	/*
-	 * Slightly shorter on mobile.
-	 */
-	mobileScrollDistance: 300,
-
-	/*
-	 * Numeric scrub creates a little smoothing between the scrollbar
-	 * and the animation playhead.
-	 */
-	scrub: 5,
-
-	/*
-	 * Caption transition duration measured in timeline proportions.
-	 */
-	captionFadeDuration: 0.08,
-
-	/*
-	 * Amount of vertical movement used for caption entrance.
-	 */
-	captionY: 45,
-
-	/*
-	 * Limit scroll-driven seeking. Video decoding is usually the expensive
-	 * part of this hero, so avoid asking the browser to decode a new frame for
-	 * every tiny scroll delta.
-	 */
-	videoSeekFps: 24,
+const padNumber = (number, padding) => {
+	return String(number).padStart(padding, "0");
 };
 
+const createFrameUrl = (
+	framePath,
+	frameExtension,
+	framePadding,
+	frameIndex
+) => {
+	return `${framePath}${padNumber(
+		frameIndex + 1,
+		framePadding
+	)}${frameExtension}`;
+};
+
+/*
+|--------------------------------------------------------------------------
+| FIND NEAREST LOADED FRAME
+|--------------------------------------------------------------------------
+|
+| If the exact requested frame isn't loaded yet, use the nearest
+| available frame temporarily.
+|
+*/
+
+const getNearestLoadedFrame = (targetIndex, loadedFrames, frameTotal) => {
+	if (loadedFrames.has(targetIndex)) {
+		return targetIndex;
+	}
+
+	for (let offset = 1; offset < frameTotal; offset += 1) {
+		const previousIndex = targetIndex - offset;
+
+		const nextIndex = targetIndex + offset;
+
+		if (previousIndex >= 0 && loadedFrames.has(previousIndex)) {
+			return previousIndex;
+		}
+
+		if (nextIndex < frameTotal && loadedFrames.has(nextIndex)) {
+			return nextIndex;
+		}
+	}
+
+	return -1;
+};
+
+/*
+|--------------------------------------------------------------------------
+| COMPONENT
+|--------------------------------------------------------------------------
+*/
+
 export default function Hero({
-	videoSrc = "/videos/hero.mp4",
-	poster = "/images/hero-poster.png",
+	frameCount = DEFAULTS.frameCount,
+
+	framePath = DEFAULTS.framePath,
+
+	frameExtension = DEFAULTS.frameExtension,
+
+	framePadding = DEFAULTS.framePadding,
+
 	captions = DEFAULT_CAPTIONS,
 
 	desktopScrollDistance = DEFAULTS.desktopScrollDistance,
@@ -78,137 +136,703 @@ export default function Hero({
 
 	scrub = DEFAULTS.scrub,
 
+	poster = "/images/hero-poster.jpg",
+
 	className = "",
 }) {
+	/*
+	|--------------------------------------------------------------------------
+	| DOM REFS
+	|--------------------------------------------------------------------------
+	*/
+
 	const heroRef = useRef(null);
+
 	const stageRef = useRef(null);
-	const videoRef = useRef(null);
+
+	const canvasRef = useRef(null);
+
+	const contextRef = useRef(null);
+
+	/*
+	|--------------------------------------------------------------------------
+	| CAPTION REFS
+	|--------------------------------------------------------------------------
+	*/
 
 	const captionRefs = useRef([]);
 
-	const [videoReady, setVideoReady] = useState(false);
+	/*
+	|--------------------------------------------------------------------------
+	| IMAGE SEQUENCE STATE
+	|--------------------------------------------------------------------------
+	*/
+
+	const imagesRef = useRef([]);
+
+	const loadedFramesRef = useRef(new Set());
+
+	/*
+	|--------------------------------------------------------------------------
+	| FRAME STATE
+	|--------------------------------------------------------------------------
+	|
+	| requestedFrameRef
+	|
+	| The frame GSAP currently wants.
+	|
+	| renderedFrameRef
+	|
+	| The frame actually drawn to canvas.
+	|
+	| These MUST be separate because the requested frame may not
+	| have finished loading yet.
+	|
+	*/
+
+	const requestedFrameRef = useRef(0);
+
+	const renderedFrameRef = useRef(-1);
+
+	/*
+	|--------------------------------------------------------------------------
+	| CANVAS DIMENSIONS
+	|--------------------------------------------------------------------------
+	*/
+
+	const dimensionsRef = useRef({
+		width: 0,
+
+		height: 0,
+
+		dpr: 1,
+	});
+
+	/*
+	|--------------------------------------------------------------------------
+	| RAF
+	|--------------------------------------------------------------------------
+	*/
+
+	const renderRafRef = useRef(null);
+
+	/*
+	|--------------------------------------------------------------------------
+	| REACT STATE
+	|--------------------------------------------------------------------------
+	*/
+
+	const [loadedCount, setLoadedCount] = useState(0);
+
+	const [sequenceReady, setSequenceReady] = useState(false);
+
+	const [sequenceError, setSequenceError] = useState(false);
 
 	const prefersReducedMotion = useMediaQuery(
 		"(prefers-reduced-motion: reduce)"
 	);
 
 	/*
-	 * --------------------------------------------------------------------------
-	 * CAPTION REFS
-	 * --------------------------------------------------------------------------
-	 */
+	|--------------------------------------------------------------------------
+	| CAPTION REF
+	|--------------------------------------------------------------------------
+	*/
 
-	const setCaptionRef = (element, index) => {
+	const setCaptionRef = useCallback((element, index) => {
 		captionRefs.current[index] = element;
-	};
-
-	const markVideoReady = () => {
-		const video = videoRef.current;
-
-		if (!video) {
-			return false;
-		}
-
-		if (Number.isFinite(video.duration) && video.duration > 0) {
-			setVideoReady(true);
-
-			return true;
-		}
-
-		return false;
-	};
-
-	useEffect(() => {
-		const video = videoRef.current;
-
-		if (!video) {
-			return;
-		}
-
-		if (markVideoReady()) {
-			return;
-		}
-
-		const handleReady = () => {
-			markVideoReady();
-		};
-
-		video.addEventListener("loadedmetadata", handleReady);
-		video.addEventListener("loadeddata", handleReady);
-		video.addEventListener("canplay", handleReady);
-
-		if (video.readyState === 0) {
-			video.load();
-		}
-
-		return () => {
-			video.removeEventListener("loadedmetadata", handleReady);
-			video.removeEventListener("loadeddata", handleReady);
-			video.removeEventListener("canplay", handleReady);
-		};
-	}, [videoSrc]);
+	}, []);
 
 	/*
-	 * --------------------------------------------------------------------------
-	 * GSAP MASTER TIMELINE
-	 * --------------------------------------------------------------------------
-	 *
-	 * The entire hero sequence lives inside one GSAP context.
-	 *
-	 * ScrollTrigger controls the timeline.
-	 *
-	 * Timeline:
-	 *
-	 * 0% ------------------------------------------ 100%
-	 * │                                             │
-	 * Video 0s                                  Video 12s
-	 * │                                             │
-	 * Caption 1 → Caption 2 → Caption 3
-	 *
-	 * useGsap() handles context/revert lifecycle.
-	 */
+	|--------------------------------------------------------------------------
+	| RENDER FRAME
+	|--------------------------------------------------------------------------
+	*/
+
+	const renderFrame = useCallback((frameIndex) => {
+		const canvas = canvasRef.current;
+
+		const context = contextRef.current;
+
+		const images = imagesRef.current;
+
+		if (!canvas || !context || !images.length) {
+			return;
+		}
+
+		/*
+		 * Clamp requested frame.
+		 */
+
+		const targetIndex = Math.max(
+			0,
+
+			Math.min(
+				Math.round(frameIndex),
+
+				images.length - 1
+			)
+		);
+
+		/*
+		 * IMPORTANT:
+		 *
+		 * Always remember the actual requested
+		 * frame, even if it isn't loaded.
+		 */
+
+		requestedFrameRef.current = targetIndex;
+
+		/*
+		 * Find the nearest available frame.
+		 */
+
+		const safeIndex = getNearestLoadedFrame(
+			targetIndex,
+
+			loadedFramesRef.current,
+
+			images.length
+		);
+
+		if (safeIndex < 0) {
+			return;
+		}
+
+		const image = images[safeIndex];
+
+		if (!image || !image.complete || image.naturalWidth === 0) {
+			return;
+		}
+
+		const { width, height } = dimensionsRef.current;
+
+		if (!width || !height) {
+			return;
+		}
+
+		/*
+		 * Cover calculation.
+		 */
+
+		const scale = Math.max(
+			width / image.naturalWidth,
+
+			height / image.naturalHeight
+		);
+
+		const drawWidth = image.naturalWidth * scale;
+
+		const drawHeight = image.naturalHeight * scale;
+
+		const x = (width - drawWidth) / 2;
+
+		const y = (height - drawHeight) / 2;
+
+		/*
+		 * Draw image.
+		 */
+
+		context.drawImage(
+			image,
+
+			x,
+
+			y,
+
+			drawWidth,
+
+			drawHeight
+		);
+
+		/*
+		 * IMPORTANT:
+		 *
+		 * Store what was actually rendered,
+		 * not what was requested.
+		 */
+
+		renderedFrameRef.current = safeIndex;
+	}, []);
+
+	/*
+	|--------------------------------------------------------------------------
+	| SCHEDULE FRAME RENDER
+	|--------------------------------------------------------------------------
+	|
+	| requestAnimationFrame prevents multiple canvas draws during the same
+	| browser frame.
+	|
+	*/
+
+	const scheduleFrameRender = useCallback(() => {
+		if (renderRafRef.current !== null) {
+			return;
+		}
+
+		renderRafRef.current = requestAnimationFrame(() => {
+			renderRafRef.current = null;
+
+			renderFrame(requestedFrameRef.current);
+		});
+	}, [renderFrame]);
+
+	/*
+	|--------------------------------------------------------------------------
+	| RESIZE CANVAS
+	|--------------------------------------------------------------------------
+	*/
+
+	const resizeCanvas = useCallback(() => {
+		const canvas = canvasRef.current;
+
+		if (!canvas) {
+			return;
+		}
+
+		const rect = canvas.getBoundingClientRect();
+
+		const dpr = Math.min(
+			window.devicePixelRatio || 1,
+
+			2
+		);
+
+		const width = Math.max(
+			1,
+
+			Math.round(rect.width)
+		);
+
+		const height = Math.max(
+			1,
+
+			Math.round(rect.height)
+		);
+
+		const dimensions = dimensionsRef.current;
+
+		/*
+		 * If only the canvas CSS dimensions remain
+		 * unchanged, don't recreate the backing canvas.
+		 */
+
+		if (
+			dimensions.width === width &&
+			dimensions.height === height &&
+			dimensions.dpr === dpr &&
+			contextRef.current
+		) {
+			scheduleFrameRender();
+
+			return;
+		}
+
+		/*
+		 * Set actual canvas resolution.
+		 */
+
+		canvas.width = Math.round(width * dpr);
+
+		canvas.height = Math.round(height * dpr);
+
+		dimensionsRef.current = {
+			width,
+
+			height,
+
+			dpr,
+		};
+
+		const context = canvas.getContext("2d", {
+			alpha: false,
+
+			desynchronized: true,
+		});
+
+		if (!context) {
+			return;
+		}
+
+		contextRef.current = context;
+
+		/*
+		 * Work in CSS pixel coordinates.
+		 */
+
+		context.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+		/*
+		 * Render the current requested frame.
+		 */
+
+		scheduleFrameRender();
+	}, [scheduleFrameRender]);
+
+	/*
+	|--------------------------------------------------------------------------
+	| PRELOAD IMAGE SEQUENCE
+	|--------------------------------------------------------------------------
+	*/
+
+	useEffect(() => {
+		let cancelled = false;
+
+		/*
+		 * Reset sequence state.
+		 */
+
+		const images = Array.from({
+			length: frameCount,
+		});
+
+		imagesRef.current = images;
+
+		loadedFramesRef.current = new Set();
+
+		requestedFrameRef.current = 0;
+
+		renderedFrameRef.current = -1;
+
+		let completed = 0;
+
+		let nextIndex = 0;
+
+		let activeRequests = 0;
+
+		let firstFrameReady = false;
+
+		let progressFrame = null;
+
+		const maxConcurrentRequests = DEFAULTS.maxConcurrentRequests;
+
+		/*
+		 * --------------------------------------------------------------
+		 * PROGRESS
+		 * --------------------------------------------------------------
+		 */
+
+		const flushProgress = () => {
+			progressFrame = null;
+
+			if (cancelled) {
+				return;
+			}
+
+			setLoadedCount(completed);
+		};
+
+		const requestProgressUpdate = () => {
+			if (progressFrame !== null) {
+				return;
+			}
+
+			progressFrame = requestAnimationFrame(flushProgress);
+		};
+
+		/*
+		 * --------------------------------------------------------------
+		 * FRAME LOADED
+		 * --------------------------------------------------------------
+		 */
+
+		const handleFrameLoaded = (index) => {
+			if (cancelled) {
+				return;
+			}
+
+			loadedFramesRef.current.add(index);
+
+			completed += 1;
+
+			activeRequests -= 1;
+
+			/*
+			 * ----------------------------------------------------------
+			 * FIRST FRAME
+			 * ----------------------------------------------------------
+			 *
+			 * As soon as frame 001 is ready,
+			 * the hero can become visible.
+			 */
+
+			if (!firstFrameReady && index === 0) {
+				firstFrameReady = true;
+
+				requestedFrameRef.current = 0;
+
+				setSequenceReady(true);
+
+				requestAnimationFrame(() => {
+					if (cancelled) {
+						return;
+					}
+
+					resizeCanvas();
+
+					renderFrame(0);
+				});
+			}
+
+			/*
+			 * ----------------------------------------------------------
+			 * IMPORTANT
+			 * ----------------------------------------------------------
+			 *
+			 * If the frame that just finished loading is the frame
+			 * currently requested by GSAP, render it immediately.
+			 */
+
+			const requestedFrame = requestedFrameRef.current;
+
+			if (index === requestedFrame) {
+				scheduleFrameRender();
+			}
+
+			requestProgressUpdate();
+
+			/*
+			 * Continue loading.
+			 */
+
+			loadNextFrame();
+		};
+
+		/*
+		 * --------------------------------------------------------------
+		 * FRAME ERROR
+		 * --------------------------------------------------------------
+		 */
+
+		const handleFrameError = () => {
+			if (cancelled) {
+				return;
+			}
+
+			completed += 1;
+
+			activeRequests -= 1;
+
+			setSequenceError(true);
+
+			requestProgressUpdate();
+
+			loadNextFrame();
+		};
+
+		/*
+		 * --------------------------------------------------------------
+		 * LOAD FRAME
+		 * --------------------------------------------------------------
+		 */
+
+		const loadFrame = (index) => {
+			const image = new Image();
+
+			/*
+			 * Decode asynchronously.
+			 */
+
+			image.decoding = "async";
+
+			/*
+			 * Do NOT use lazy loading.
+			 *
+			 * This is an animation sequence, not a normal image.
+			 */
+
+			if ("fetchPriority" in image) {
+				image.fetchPriority = index < 12 ? "high" : "auto";
+			}
+
+			images[index] = image;
+
+			image.onload = () => {
+				handleFrameLoaded(index);
+			};
+
+			image.onerror = () => {
+				handleFrameError();
+			};
+
+			image.src = createFrameUrl(
+				framePath,
+
+				frameExtension,
+
+				framePadding,
+
+				index
+			);
+		};
+
+		/*
+		 * --------------------------------------------------------------
+		 * CONCURRENT LOADER
+		 * --------------------------------------------------------------
+		 */
+
+		function loadNextFrame() {
+			while (
+				activeRequests < maxConcurrentRequests &&
+				nextIndex < frameCount &&
+				!cancelled
+			) {
+				const frameIndex = nextIndex;
+
+				nextIndex += 1;
+
+				activeRequests += 1;
+
+				loadFrame(frameIndex);
+			}
+		}
+
+		/*
+		 * Start loading.
+		 */
+
+		setLoadedCount(0);
+
+		setSequenceReady(false);
+
+		setSequenceError(false);
+
+		loadNextFrame();
+
+		/*
+		 * --------------------------------------------------------------
+		 * CLEANUP
+		 * --------------------------------------------------------------
+		 */
+
+		return () => {
+			cancelled = true;
+
+			if (progressFrame !== null) {
+				cancelAnimationFrame(progressFrame);
+			}
+
+			images.forEach((image) => {
+				if (!image) {
+					return;
+				}
+
+				image.onload = null;
+
+				image.onerror = null;
+
+				/*
+				 * Abort the browser request where possible.
+				 */
+
+				image.src = "";
+			});
+
+			imagesRef.current = [];
+
+			loadedFramesRef.current = new Set();
+		};
+	}, [
+		frameCount,
+
+		framePath,
+
+		frameExtension,
+
+		framePadding,
+
+		renderFrame,
+
+		resizeCanvas,
+
+		scheduleFrameRender,
+	]);
+
+	/*
+	|--------------------------------------------------------------------------
+	| RESIZE OBSERVER
+	|--------------------------------------------------------------------------
+	*/
+
+	useEffect(() => {
+		if (!sequenceReady) {
+			return;
+		}
+
+		resizeCanvas();
+
+		const observer = new ResizeObserver(() => {
+			resizeCanvas();
+		});
+
+		if (canvasRef.current) {
+			observer.observe(canvasRef.current);
+		}
+
+		window.addEventListener("resize", resizeCanvas, {
+			passive: true,
+		});
+
+		return () => {
+			observer.disconnect();
+
+			window.removeEventListener("resize", resizeCanvas);
+		};
+	}, [sequenceReady, resizeCanvas]);
+
+	/*
+	|--------------------------------------------------------------------------
+	| INITIAL FRAME
+	|--------------------------------------------------------------------------
+	*/
+
+	useEffect(() => {
+		if (!sequenceReady) {
+			return;
+		}
+
+		requestAnimationFrame(() => {
+			resizeCanvas();
+
+			renderFrame(requestedFrameRef.current);
+		});
+	}, [sequenceReady, resizeCanvas, renderFrame]);
+
+	/*
+	|--------------------------------------------------------------------------
+	| GSAP SCROLL TIMELINE
+	|--------------------------------------------------------------------------
+	*/
 
 	useGsap(
 		() => {
 			const hero = heroRef.current;
+
 			const stage = stageRef.current;
-			const video = videoRef.current;
 
-			if (!hero || !stage || !video) {
+			if (!hero || !stage || !sequenceReady) {
 				return;
 			}
 
 			/*
-			 * We need video metadata before duration/currentTime can
-			 * be reliably used.
-			 */
-			if (!videoReady || !video.duration) {
-				return;
-			}
-
-			/*
-			 * ----------------------------------------------------------------------
+			 * ----------------------------------------------------------
 			 * REDUCED MOTION
-			 * ----------------------------------------------------------------------
-			 *
-			 * Don't create a large pinned scroll animation for users who have
-			 * explicitly requested reduced motion.
+			 * ----------------------------------------------------------
 			 */
 
 			if (prefersReducedMotion) {
-				gsap.set(stage, {
-					clearProps: "all",
-				});
+				requestedFrameRef.current = 0;
 
-				gsap.set(video, {
-					currentTime: 0,
-				});
+				renderFrame(0);
 
 				captionRefs.current.forEach((caption, index) => {
-					if (!caption) return;
+					if (!caption) {
+						return;
+					}
 
 					gsap.set(caption, {
 						autoAlpha: index === 0 ? 1 : 0,
+
 						y: 0,
 					});
 				});
@@ -217,82 +841,37 @@ export default function Hero({
 			}
 
 			/*
-			 * ----------------------------------------------------------------------
-			 * VIDEO
-			 * ----------------------------------------------------------------------
-			 */
-
-			const duration = video.duration;
-			const frameDuration = 1 / DEFAULTS.videoSeekFps;
-			let seekFrame = 0;
-			let pendingTime = 0;
-			let lastSeekTime = -1;
-
-			const seekVideo = (progress) => {
-				pendingTime = Math.min(
-					Math.max(duration * progress, 0),
-					Math.max(duration - 0.001, 0)
-				);
-
-				if (seekFrame) {
-					return;
-				}
-
-				seekFrame = requestAnimationFrame(() => {
-					seekFrame = 0;
-
-					const snappedTime =
-						Math.min(
-							Math.round(pendingTime / frameDuration) *
-								frameDuration,
-							Math.max(duration - 0.001, 0)
-						);
-
-					if (
-						lastSeekTime >= 0 &&
-						Math.abs(snappedTime - lastSeekTime) <
-							frameDuration * 0.5
-					) {
-						return;
-					}
-
-					lastSeekTime = snappedTime;
-					video.currentTime = snappedTime;
-				});
-			};
-
-			/*
-			 * Make sure the video starts at the first frame.
-			 */
-			gsap.set(video, {
-				currentTime: 0,
-			});
-
-			/*
-			 * Some browsers require the video to be paused before manually
-			 * controlling currentTime.
-			 */
-			// video.pause();
-
-			/*
-			 * ----------------------------------------------------------------------
+			 * ----------------------------------------------------------
 			 * INITIAL CAPTION STATE
-			 * ----------------------------------------------------------------------
+			 * ----------------------------------------------------------
 			 */
 
 			captionRefs.current.forEach((caption, index) => {
-				if (!caption) return;
+				if (!caption) {
+					return;
+				}
 
 				gsap.set(caption, {
 					autoAlpha: index === 0 ? 1 : 0,
+
 					y: index === 0 ? 0 : DEFAULTS.captionY,
 				});
 			});
 
 			/*
-			 * ----------------------------------------------------------------------
+			 * ----------------------------------------------------------
+			 * GSAP PLAYHEAD
+			 * ----------------------------------------------------------
+			 */
+
+			const playhead = {
+				frame: 0,
+			};
+
+			/*
+			 * ----------------------------------------------------------
 			 * MASTER TIMELINE
-			 * ----------------------------------------------------------------------
+			 * ----------------------------------------------------------
 			 */
 
 			const timeline = gsap.timeline({
@@ -303,19 +882,10 @@ export default function Hero({
 				scrollTrigger: {
 					trigger: hero,
 
-					/*
-					 * Keep the hero stage fixed while the timeline progresses.
-					 */
 					pin: stage,
 
-					/*
-					 * Start when hero reaches viewport top.
-					 */
 					start: "top top",
 
-					/*
-					 * Dynamically calculate scroll distance.
-					 */
 					end: () => {
 						const distance =
 							window.innerWidth <= 768
@@ -326,56 +896,62 @@ export default function Hero({
 					},
 
 					/*
-					 * Smooth scroll-driven playback.
+					 * Higher scrub = smoother but more delayed.
+					 *
+					 * 0.6 - 0.9 is generally good for image sequences.
 					 */
+
 					scrub,
 
-					/*
-					 * Helps reduce visible pinning delay on fast scrolling.
-					 */
 					anticipatePin: 1,
 
-					/*
-					 * Important for responsive layouts.
-					 */
 					invalidateOnRefresh: true,
 
-					/*
-					 * Refresh after fonts/images/layout changes.
-					 */
-					onRefresh: () => {
-						/*
-						 * Keep video position synchronized after refresh.
-						 */
-						if (!Number.isFinite(video.currentTime)) {
-							video.currentTime = 0;
-						}
-					},
+					fastScrollEnd: false,
 
-					onUpdate: (self) => {
-						seekVideo(self.progress);
-					},
+					preventOverlaps: true,
 				},
 			});
 
 			/*
-			 * ----------------------------------------------------------------------
-			 * TIMELINE LENGTH
-			 * ----------------------------------------------------------------------
-			 *
-			 * Keep the timeline normalized to 0..1. Video seeking happens in
-			 * ScrollTrigger's onUpdate callback so it can be throttled.
+			 * ----------------------------------------------------------
+			 * FRAME ANIMATION
+			 * ----------------------------------------------------------
 			 */
 
-			timeline.to({}, { duration: 1 }, 0);
+			timeline.to(
+				playhead,
+				{
+					frame: frameCount - 1,
+
+					duration: 1,
+
+					ease: "none",
+
+					onUpdate: () => {
+						const frame = Math.round(playhead.frame);
+
+						/*
+						 * GSAP requested frame.
+						 */
+
+						requestedFrameRef.current = frame;
+
+						/*
+						 * Render it on next browser frame.
+						 */
+
+						scheduleFrameRender();
+					},
+				},
+
+				0
+			);
 
 			/*
-			 * ----------------------------------------------------------------------
+			 * ----------------------------------------------------------
 			 * CAPTION TIMELINE
-			 * ----------------------------------------------------------------------
-			 *
-			 * Divide the sequence into equal sections based on the number
-			 * of captions.
+			 * ----------------------------------------------------------
 			 */
 
 			const captionCount = captions.length;
@@ -386,58 +962,64 @@ export default function Hero({
 				captions.forEach((_, index) => {
 					const caption = captionRefs.current[index];
 
-					if (!caption) return;
+					if (!caption) {
+						return;
+					}
 
 					const start = index * sectionDuration;
 
 					const end = (index + 1) * sectionDuration;
 
 					/*
-					 * Caption 1 starts visible.
+					 * ------------------------------------------------
+					 * ENTER
+					 * ------------------------------------------------
 					 */
-					if (index === 0) {
-						gsap.set(caption, {
-							autoAlpha: 1,
-							y: 0,
-						});
-					}
 
-					/*
-					 * Every caption except the first enters.
-					 */
 					if (index > 0) {
 						timeline.fromTo(
 							caption,
+
 							{
 								autoAlpha: 0,
+
 								y: DEFAULTS.captionY,
 							},
+
 							{
 								autoAlpha: 1,
+
 								y: 0,
+
 								duration: DEFAULTS.captionFadeDuration,
+
 								ease: "power3.out",
 							},
+
 							start
 						);
 					}
 
 					/*
-					 * Fade the current caption out near the end
-					 * of its section.
-					 *
-					 * The last caption remains visible until the hero
-					 * sequence finishes.
+					 * ------------------------------------------------
+					 * EXIT
+					 * ------------------------------------------------
 					 */
+
 					if (index < captionCount - 1) {
 						timeline.to(
 							caption,
+
 							{
 								autoAlpha: 0,
+
 								y: -DEFAULTS.captionY,
+
 								duration: DEFAULTS.captionFadeDuration,
+
 								ease: "power3.in",
 							},
+
 							end - DEFAULTS.captionFadeDuration
 						);
 					}
@@ -445,52 +1027,47 @@ export default function Hero({
 			}
 
 			/*
-			 * ----------------------------------------------------------------------
-			 * FINAL VIDEO FRAME
-			 * ----------------------------------------------------------------------
-			 *
-			 * Ensure the video is exactly at the final frame when the timeline
-			 * reaches the end.
-			 */
-
-			timeline.call(
-				() => {
-					video.currentTime = Math.max(0, duration - 0.001);
-				},
-				null,
-				1
-			);
-
-			/*
-			 * ----------------------------------------------------------------------
-			 * REFRESH
-			 * ----------------------------------------------------------------------
-			 *
-			 * ScrollTrigger calculates its positions automatically, but an
-			 * explicit refresh after setup is useful for dynamic content.
+			 * ----------------------------------------------------------
+			 * SCROLLTRIGGER REFRESH
+			 * ----------------------------------------------------------
 			 */
 
 			requestAnimationFrame(() => {
 				ScrollTrigger.refresh();
 			});
 
+			/*
+			 * ----------------------------------------------------------
+			 * CLEANUP
+			 * ----------------------------------------------------------
+			 */
+
 			return () => {
-				if (seekFrame) {
-					cancelAnimationFrame(seekFrame);
+				if (renderRafRef.current !== null) {
+					cancelAnimationFrame(renderRafRef.current);
+
+					renderRafRef.current = null;
 				}
 			};
 		},
+
 		{
 			scope: heroRef,
 
 			dependencies: [
-				videoReady,
+				sequenceReady,
+
 				prefersReducedMotion,
-				videoSrc,
-				desktopScrollDistance,
-				mobileScrollDistance,
-				scrub,
+
+				frameCount,
+
 				captions.length,
+
+				desktopScrollDistance,
+
+				mobileScrollDistance,
+
+				scrub,
 			],
 
 			revertOnUpdate: true,
@@ -498,66 +1075,103 @@ export default function Hero({
 	);
 
 	/*
-	 * --------------------------------------------------------------------------
-	 * VIDEO METADATA
-	 * --------------------------------------------------------------------------
-	 */
+	|--------------------------------------------------------------------------
+	| LOADING PROGRESS
+	|--------------------------------------------------------------------------
+	*/
 
-	const handleLoadedMetadata = () => {
-		markVideoReady();
-	};
+	const progress =
+		frameCount > 0
+			? Math.min(
+					100,
 
-	/*
-	 * --------------------------------------------------------------------------
-	 * VIDEO ERROR
-	 * --------------------------------------------------------------------------
-	 */
-
-	const handleVideoError = () => {
-		setVideoReady(false);
-	};
+					Math.round((loadedCount / frameCount) * 100)
+			  )
+			: 0;
 
 	/*
-	 * --------------------------------------------------------------------------
-	 * MOBILE / REDUCED MOTION
-	 * --------------------------------------------------------------------------
-	 *
-	 * We still render the video element so the poster can act as the visual
-	 * fallback. The timeline itself decides whether to animate it.
-	 */
+	|--------------------------------------------------------------------------
+	| HERO CLASS
+	|--------------------------------------------------------------------------
+	*/
 
-	const classes = [styles.hero, !videoReady ? styles.loading : "", className]
+	const heroClasses = [
+		styles.hero,
+
+		!sequenceReady ? styles.loading : styles.ready,
+
+		sequenceError ? styles.hasError : "",
+
+		className,
+	]
 		.filter(Boolean)
 		.join(" ");
 
+	/*
+	|--------------------------------------------------------------------------
+	| RENDER
+	|--------------------------------------------------------------------------
+	*/
+
 	return (
-		<section ref={heroRef} className={classes} aria-label="Hero">
+		<section ref={heroRef} className={heroClasses} aria-label="Hero">
 			<div ref={stageRef} className={styles.stage}>
-				<div className={styles.media}>
-					<video
-						ref={videoRef}
-						className={styles.video}
-						src={videoSrc}
-						poster={poster}
-						muted
-						playsInline
-						preload="auto"
-						disablePictureInPicture
-						controls={false}
-						aria-hidden="true"
-						onLoadedMetadata={handleLoadedMetadata}
-						onError={handleVideoError}
-					/>
+				{/*
+				 * --------------------------------------------------------------
+				 * POSTER
+				 * --------------------------------------------------------------
+				 */}
 
-					<div className={styles.videoOverlay} aria-hidden="true" />
+				<div
+					className={styles.poster}
+					style={{
+						backgroundImage: `url("${poster}")`,
+					}}
+					aria-hidden="true"
+				/>
 
-					<div className={styles.vignette} aria-hidden="true" />
-				</div>
+				{/*
+				 * --------------------------------------------------------------
+				 * CANVAS
+				 * --------------------------------------------------------------
+				 */}
+
+				<canvas
+					ref={canvasRef}
+					className={styles.canvas}
+					aria-hidden="true"
+				/>
+
+				{/*
+				 * --------------------------------------------------------------
+				 * VIDEO OVERLAY
+				 * --------------------------------------------------------------
+				 */}
+
+				<div className={styles.videoOverlay} aria-hidden="true" />
+
+				{/*
+				 * --------------------------------------------------------------
+				 * VIGNETTE
+				 * --------------------------------------------------------------
+				 */}
+
+				<div className={styles.vignette} aria-hidden="true" />
+
+				{/*
+				 * --------------------------------------------------------------
+				 * CAPTIONS
+				 * --------------------------------------------------------------
+				 */}
 
 				<div className={styles.content}>
 					<div className={styles.captionViewport}>
 						{captions.map(
-							({ eyebrow, title, description }, index) => (
+							(
+								{ eyebrow, title, description },
+
+								index
+							) => (
 								<div
 									key={`${title}-${index}`}
 									ref={(element) =>
@@ -584,16 +1198,53 @@ export default function Hero({
 					</div>
 				</div>
 
+				{/*
+				 * --------------------------------------------------------------
+				 * SCROLL INDICATOR
+				 * --------------------------------------------------------------
+				 */}
+
 				<div className={styles.scrollIndicator} aria-hidden="true">
 					<span className={styles.scrollLine} />
 
 					<span className={styles.scrollText}>Scroll to explore</span>
 				</div>
 
+				{/*
+				 * --------------------------------------------------------------
+				 * COUNTER
+				 * --------------------------------------------------------------
+				 */}
+
 				<div className={styles.heroCounter} aria-hidden="true">
 					<span>01</span>
+
 					<span className={styles.counterDivider}>/</span>
-					<span>03</span>
+
+					<span>{String(captions.length).padStart(2, "0")}</span>
+				</div>
+
+				{/*
+				 * --------------------------------------------------------------
+				 * LOADER
+				 * --------------------------------------------------------------
+				 */}
+
+				<div className={styles.loader} aria-hidden="true">
+					<span className={styles.loaderLabel}>
+						Loading experience
+					</span>
+
+					<span className={styles.loaderProgress}>{progress}%</span>
+
+					<div className={styles.loaderTrack}>
+						<span
+							className={styles.loaderBar}
+							style={{
+								transform: `scaleX(${progress / 100})`,
+							}}
+						/>
+					</div>
 				</div>
 			</div>
 		</section>

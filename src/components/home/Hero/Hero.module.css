@@ -1,28 +1,19 @@
 .hero {
-  /*
-   * ScrollTrigger provides the extra scroll distance through pin spacing.
-   * Without JavaScript, the hero remains a normal first-viewport section.
-   */
   position: relative;
-
-  min-height: 100svh;
 
   width: 100%;
 
+  min-height: 100svh;
+
   background: #050505;
 }
-
-/*
- * --------------------------------------------------------------------------
- * STAGE
- * --------------------------------------------------------------------------
- */
 
 .stage {
   position: relative;
 
   width: 100%;
-  height: 100svh;
+
+  height: 100vh;
 
   min-height: 600px;
 
@@ -31,45 +22,61 @@
   background: #050505;
 
   isolation: isolate;
+
+  contain: layout paint;
 }
 
 /*
- * --------------------------------------------------------------------------
- * MEDIA
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| POSTER
+|--------------------------------------------------------------------------
+*/
 
-.media {
+.poster {
   position: absolute;
 
   inset: 0;
 
   z-index: 0;
 
-  overflow: hidden;
+  background-position: center;
+  background-repeat: no-repeat;
+  background-size: cover;
 
-  background: #050505;
+  transform: scale(1.001);
 
-  contain: layout paint;
+  transition:
+    opacity 0.6s ease;
+
+  pointer-events: none;
 }
 
-.video {
+.ready .poster {
+  opacity: 0;
+}
+
+/*
+|--------------------------------------------------------------------------
+| CANVAS
+|--------------------------------------------------------------------------
+*/
+
+.canvas {
   position: absolute;
 
   inset: 0;
 
-  width: 100%;
-  height: 100%;
+  z-index: 1;
 
   display: block;
 
-  object-fit: cover;
-
-  object-position: center center;
+  width: 100%;
+  height: 100%;
 
   /*
-   * The video is controlled by GSAP.
+   * Prevent the canvas from becoming an interaction target.
    */
+
   pointer-events: none;
 
   user-select: none;
@@ -77,42 +84,19 @@
   /*
    * GPU compositing.
    */
+
   transform: translate3d(0, 0, 0);
 
-  will-change: transform;
+  backface-visibility: hidden;
 }
 
 /*
- * --------------------------------------------------------------------------
- * VIDEO COLOR OVERLAY
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| OVERLAY
+|--------------------------------------------------------------------------
+*/
 
 .videoOverlay {
-  position: absolute;
-
-  inset: 0;
-
-  z-index: 1;
-
-  pointer-events: none;
-
-  background:
-    linear-gradient(
-      180deg,
-      rgba(0, 0, 0, 0.28) 0%,
-      rgba(0, 0, 0, 0.02) 35%,
-      rgba(0, 0, 0, 0.28) 100%
-    );
-}
-
-/*
- * --------------------------------------------------------------------------
- * VIGNETTE
- * --------------------------------------------------------------------------
- */
-
-.vignette {
   position: absolute;
 
   inset: 0;
@@ -122,19 +106,43 @@
   pointer-events: none;
 
   background:
+    linear-gradient(
+      180deg,
+      rgba(0, 0, 0, 0.28) 0%,
+      rgba(0, 0, 0, 0.03) 35%,
+      rgba(0, 0, 0, 0.36) 100%
+    );
+}
+
+/*
+|--------------------------------------------------------------------------
+| VIGNETTE
+|--------------------------------------------------------------------------
+*/
+
+.vignette {
+  position: absolute;
+
+  inset: 0;
+
+  z-index: 3;
+
+  pointer-events: none;
+
+  background:
     radial-gradient(
       ellipse at center,
-      transparent 30%,
-      rgba(0, 0, 0, 0.12) 65%,
+      transparent 28%,
+      rgba(0, 0, 0, 0.1) 62%,
       rgba(0, 0, 0, 0.62) 100%
     );
 }
 
 /*
- * --------------------------------------------------------------------------
- * CONTENT
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| CONTENT
+|--------------------------------------------------------------------------
+*/
 
 .content {
   position: absolute;
@@ -147,20 +155,12 @@
 
   align-items: flex-end;
 
-  justify-content: flex-start;
-
   padding:
     clamp(32px, 7vw, 110px)
     clamp(24px, 7vw, 120px);
 
   pointer-events: none;
 }
-
-/*
- * --------------------------------------------------------------------------
- * CAPTION VIEWPORT
- * --------------------------------------------------------------------------
- */
 
 .captionViewport {
   position: relative;
@@ -169,16 +169,6 @@
 
   min-height: 280px;
 }
-
-/*
- * --------------------------------------------------------------------------
- * CAPTION
- * --------------------------------------------------------------------------
- *
- * All captions occupy exactly the same physical area.
- *
- * GSAP changes opacity + Y position.
- */
 
 .caption {
   position: absolute;
@@ -192,30 +182,22 @@
 
   visibility: hidden;
 
-  pointer-events: none;
-
   will-change:
     transform,
     opacity;
-
-  transform: translate3d(0, 0, 0);
 }
-
-/*
- * First caption becomes visible immediately.
- * GSAP also controls this state after initialization.
- */
 
 .caption:first-child {
   opacity: 1;
+
   visibility: visible;
 }
 
 /*
- * --------------------------------------------------------------------------
- * EYEBROW
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| EYEBROW
+|--------------------------------------------------------------------------
+*/
 
 .eyebrow {
   display: inline-flex;
@@ -235,17 +217,15 @@
 
   text-transform: uppercase;
 
-  color: rgba(255, 255, 255, 0.72);
+  color:
+    rgba(255, 255, 255, 0.72);
 }
-
-/*
- * Small indicator before eyebrow.
- */
 
 .eyebrow::before {
   content: "";
 
   width: 7px;
+
   height: 7px;
 
   margin-right: 10px;
@@ -256,10 +236,10 @@
 }
 
 /*
- * --------------------------------------------------------------------------
- * TITLE
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| TITLE
+|--------------------------------------------------------------------------
+*/
 
 .title {
   max-width: 800px;
@@ -281,15 +261,16 @@
 }
 
 /*
- * --------------------------------------------------------------------------
- * DESCRIPTION
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| DESCRIPTION
+|--------------------------------------------------------------------------
+*/
 
 .description {
   max-width: 520px;
 
-  margin: 24px 0 0;
+  margin:
+    24px 0 0;
 
   font-size:
     clamp(0.9rem, 1.1vw, 1.1rem);
@@ -300,16 +281,17 @@
 
   letter-spacing: -0.01em;
 
-  color: rgba(255, 255, 255, 0.72);
+  color:
+    rgba(255, 255, 255, 0.72);
 
   text-wrap: pretty;
 }
 
 /*
- * --------------------------------------------------------------------------
- * SCROLL INDICATOR
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| SCROLL INDICATOR
+|--------------------------------------------------------------------------
+*/
 
 .scrollIndicator {
   position: absolute;
@@ -328,9 +310,10 @@
 
   gap: 12px;
 
-  pointer-events: none;
+  color:
+    rgba(255, 255, 255, 0.62);
 
-  color: rgba(255, 255, 255, 0.62);
+  pointer-events: none;
 }
 
 .scrollLine {
@@ -339,11 +322,13 @@
   display: block;
 
   width: 46px;
+
   height: 1px;
 
   overflow: hidden;
 
-  background: rgba(255, 255, 255, 0.25);
+  background:
+    rgba(255, 255, 255, 0.25);
 }
 
 .scrollLine::after {
@@ -351,19 +336,21 @@
 
   position: absolute;
 
-  left: 0;
-  top: 0;
-
-  width: 100%;
-  height: 100%;
+  inset: 0;
 
   background: #ffffff;
 
   transform-origin: left center;
 
   animation:
-    scrollLine 1.8s
-    cubic-bezier(0.65, 0, 0.35, 1)
+    scrollLine
+    1.8s
+    cubic-bezier(
+      0.65,
+      0,
+      0.35,
+      1
+    )
     infinite;
 }
 
@@ -379,31 +366,43 @@
 
 @keyframes scrollLine {
   0% {
-    transform: scaleX(0);
-    transform-origin: left center;
+    transform:
+      scaleX(0);
+
+    transform-origin:
+      left center;
   }
 
   45% {
-    transform: scaleX(1);
-    transform-origin: left center;
+    transform:
+      scaleX(1);
+
+    transform-origin:
+      left center;
   }
 
   55% {
-    transform: scaleX(1);
-    transform-origin: right center;
+    transform:
+      scaleX(1);
+
+    transform-origin:
+      right center;
   }
 
   100% {
-    transform: scaleX(0);
-    transform-origin: right center;
+    transform:
+      scaleX(0);
+
+    transform-origin:
+      right center;
   }
 }
 
 /*
- * --------------------------------------------------------------------------
- * COUNTER
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| COUNTER
+|--------------------------------------------------------------------------
+*/
 
 .heroCounter {
   position: absolute;
@@ -428,7 +427,8 @@
 
   letter-spacing: 0.1em;
 
-  color: rgba(255, 255, 255, 0.68);
+  color:
+    rgba(255, 255, 255, 0.68);
 
   pointer-events: none;
 }
@@ -438,52 +438,106 @@
 }
 
 /*
- * --------------------------------------------------------------------------
- * LOADING
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| LOADER
+|--------------------------------------------------------------------------
+*/
 
-.loading .video {
-  opacity: 1;
-}
-
-.video {
-  transition: opacity 0.45s ease;
-}
-
-.loading::after {
-  content: "";
-
+.loader {
   position: absolute;
 
   inset: 0;
 
   z-index: 20;
 
+  display: flex;
+
+  flex-direction: column;
+
+  align-items: center;
+
+  justify-content: center;
+
+  gap: 14px;
+
+  background:
+    linear-gradient(
+      180deg,
+      rgba(5, 5, 5, 0.78),
+      rgba(5, 5, 5, 0.5)
+    );
+
   pointer-events: none;
 
-  background: #050505;
+  transition:
+    opacity 0.6s ease,
+    visibility 0.6s ease;
+}
 
+.ready .loader {
   opacity: 0;
 
-  transition: opacity 0.5s ease;
+  visibility: hidden;
+}
+
+.loaderLabel {
+  font-size: 0.65rem;
+
+  font-weight: 500;
+
+  letter-spacing: 0.15em;
+
+  text-transform: uppercase;
+
+  color:
+    rgba(255, 255, 255, 0.5);
+}
+
+.loaderProgress {
+  font-size:
+    clamp(1.8rem, 4vw, 3rem);
+
+  font-weight: 400;
+
+  line-height: 1;
+
+  letter-spacing: -0.04em;
+
+  color: #ffffff;
+}
+
+.loaderTrack {
+  width:
+    min(180px, 45vw);
+
+  height: 1px;
+
+  overflow: hidden;
+
+  background:
+    rgba(255, 255, 255, 0.16);
+}
+
+.loaderBar {
+  display: block;
+
+  width: 100%;
+
+  height: 100%;
+
+  background: #ffffff;
+
+  transform-origin: left center;
+
+  transition:
+    transform 0.15s ease;
 }
 
 /*
- * Once video metadata is ready, the overlay can disappear.
- */
-
-.hero:not(.loading)::after {
-  opacity: 0;
-
-  pointer-events: none;
-}
-
-/*
- * --------------------------------------------------------------------------
- * TABLET
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| TABLET
+|--------------------------------------------------------------------------
+*/
 
 @media (max-width: 1024px) {
   .content {
@@ -494,36 +548,31 @@
   }
 
   .captionViewport {
-    width: min(680px, 85vw);
+    width:
+      min(680px, 85vw);
   }
 
   .title {
     font-size:
-      clamp(3.5rem, 9vw, 6rem);
+      clamp(
+        3.5rem,
+        9vw,
+        6rem
+      );
   }
 }
 
 /*
- * --------------------------------------------------------------------------
- * MOBILE
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| MOBILE
+|--------------------------------------------------------------------------
+*/
 
 @media (max-width: 768px) {
   .stage {
     height: 100svh;
 
     min-height: 560px;
-  }
-
-  .video {
-    /*
-     * Portrait crop.
-     *
-     * Change this to center top if your video subject is
-     * positioned higher in the frame.
-     */
-    object-position: center center;
   }
 
   .content {
@@ -551,7 +600,11 @@
     max-width: 100%;
 
     font-size:
-      clamp(2.7rem, 13vw, 4.5rem);
+      clamp(
+        2.7rem,
+        13vw,
+        4.5rem
+      );
 
     line-height: 0.94;
 
@@ -586,10 +639,10 @@
 }
 
 /*
- * --------------------------------------------------------------------------
- * SMALL MOBILE
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| SMALL MOBILE
+|--------------------------------------------------------------------------
+*/
 
 @media (max-width: 480px) {
   .stage {
@@ -609,7 +662,11 @@
 
   .title {
     font-size:
-      clamp(2.5rem, 14vw, 3.8rem);
+      clamp(
+        2.5rem,
+        14vw,
+        3.8rem
+      );
   }
 
   .description {
@@ -626,12 +683,14 @@
 }
 
 /*
- * --------------------------------------------------------------------------
- * REDUCED MOTION
- * --------------------------------------------------------------------------
- */
+|--------------------------------------------------------------------------
+| REDUCED MOTION
+|--------------------------------------------------------------------------
+*/
 
-@media (prefers-reduced-motion: reduce) {
+@media (
+  prefers-reduced-motion: reduce
+) {
   .hero {
     min-height: 100svh;
   }
@@ -640,27 +699,7 @@
     display: none;
   }
 
-  .video {
-    transition: none;
-  }
-
-  .caption {
-    transition: none;
-  }
-
   .scrollLine::after {
     animation: none;
-  }
-}
-
-/*
- * --------------------------------------------------------------------------
- * TOUCH / COARSE POINTER
- * --------------------------------------------------------------------------
- */
-
-@media (pointer: coarse) {
-  .scrollIndicator {
-    display: none;
   }
 }
