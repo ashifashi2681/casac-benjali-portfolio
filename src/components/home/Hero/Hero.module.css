@@ -3,7 +3,7 @@
 
   width: 100%;
 
-  min-height: 100svh;
+  min-height: 450vh;
 
   background: #050505;
 }
@@ -22,8 +22,6 @@
   background: #050505;
 
   isolation: isolate;
-
-  contain: layout paint;
 }
 
 /*
@@ -85,7 +83,7 @@
    * GPU compositing.
    */
 
-  transform: translate3d(0, 0, 0);
+  transform: translateZ(0);
 
   backface-visibility: hidden;
 }
@@ -460,12 +458,7 @@
 
   gap: 14px;
 
-  background:
-    linear-gradient(
-      180deg,
-      rgba(5, 5, 5, 0.78),
-      rgba(5, 5, 5, 0.5)
-    );
+  background: #050505;
 
   pointer-events: none;
 
@@ -540,6 +533,10 @@
 */
 
 @media (max-width: 1024px) {
+  .hero {
+    min-height: 350vh;
+  }
+
   .content {
     padding:
       48px
@@ -569,6 +566,10 @@
 */
 
 @media (max-width: 768px) {
+  .hero {
+    min-height: 300vh;
+  }
+
   .stage {
     height: 100svh;
 

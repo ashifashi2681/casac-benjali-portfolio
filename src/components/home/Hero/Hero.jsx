@@ -9,61 +9,40 @@ import { gsap, ScrollTrigger } from "@/animations/gsap";
 import styles from "./Hero.module.css";
 
 const DEFAULTS = {
-	frameCount: 293,
-
-	framePath: "/images/hero-sequence/ezgif-frame-",
-
-	frameExtension: ".jpg",
-
-	framePadding: 3,
+	frameCount: 100,
+	framePath: "/images/hero-sequence/frame_",
+	frameExtension: ".webp",
+	framePadding: 4,
 
 	desktopScrollDistance: 450,
-
 	mobileScrollDistance: 300,
 
 	scrub: 0.8,
 
 	captionFadeDuration: 0.08,
-
 	captionY: 45,
-
-	maxConcurrentRequests: 8,
 };
 
 const DEFAULT_CAPTIONS = [
 	{
 		eyebrow: "01 / VISION",
-
 		title: "Turn Ambition Into Impact.",
-
 		description:
 			"Build a clear vision, create meaningful momentum, and move forward with purpose.",
 	},
-
 	{
 		eyebrow: "02 / STRATEGY",
-
 		title: "Strategy Creates Momentum.",
-
 		description:
 			"Transform ideas into focused strategies that create measurable business growth.",
 	},
-
 	{
 		eyebrow: "03 / RESULTS",
-
 		title: "Create Work That Matters.",
-
 		description:
 			"Lead with confidence, make better decisions, and create lasting results.",
 	},
 ];
-
-/*
-|--------------------------------------------------------------------------
-| HELPERS
-|--------------------------------------------------------------------------
-*/
 
 const padNumber = (number, padding) => {
 	return String(number).padStart(padding, "0");
@@ -80,44 +59,6 @@ const createFrameUrl = (
 		framePadding
 	)}${frameExtension}`;
 };
-
-/*
-|--------------------------------------------------------------------------
-| FIND NEAREST LOADED FRAME
-|--------------------------------------------------------------------------
-|
-| If the exact requested frame isn't loaded yet, use the nearest
-| available frame temporarily.
-|
-*/
-
-const getNearestLoadedFrame = (targetIndex, loadedFrames, frameTotal) => {
-	if (loadedFrames.has(targetIndex)) {
-		return targetIndex;
-	}
-
-	for (let offset = 1; offset < frameTotal; offset += 1) {
-		const previousIndex = targetIndex - offset;
-
-		const nextIndex = targetIndex + offset;
-
-		if (previousIndex >= 0 && loadedFrames.has(previousIndex)) {
-			return previousIndex;
-		}
-
-		if (nextIndex < frameTotal && loadedFrames.has(nextIndex)) {
-			return nextIndex;
-		}
-	}
-
-	return -1;
-};
-
-/*
-|--------------------------------------------------------------------------
-| COMPONENT
-|--------------------------------------------------------------------------
-*/
 
 export default function Hero({
 	frameCount = DEFAULTS.frameCount,
@@ -136,91 +77,27 @@ export default function Hero({
 
 	scrub = DEFAULTS.scrub,
 
-	poster = "/images/hero-poster.jpg",
+	poster = "/images/hero-poster.webp",
 
 	className = "",
 }) {
-	/*
-	|--------------------------------------------------------------------------
-	| DOM REFS
-	|--------------------------------------------------------------------------
-	*/
-
 	const heroRef = useRef(null);
-
 	const stageRef = useRef(null);
-
 	const canvasRef = useRef(null);
-
-	const contextRef = useRef(null);
-
-	/*
-	|--------------------------------------------------------------------------
-	| CAPTION REFS
-	|--------------------------------------------------------------------------
-	*/
 
 	const captionRefs = useRef([]);
 
-	/*
-	|--------------------------------------------------------------------------
-	| IMAGE SEQUENCE STATE
-	|--------------------------------------------------------------------------
-	*/
-
 	const imagesRef = useRef([]);
-
-	const loadedFramesRef = useRef(new Set());
-
-	/*
-	|--------------------------------------------------------------------------
-	| FRAME STATE
-	|--------------------------------------------------------------------------
-	|
-	| requestedFrameRef
-	|
-	| The frame GSAP currently wants.
-	|
-	| renderedFrameRef
-	|
-	| The frame actually drawn to canvas.
-	|
-	| These MUST be separate because the requested frame may not
-	| have finished loading yet.
-	|
-	*/
-
-	const requestedFrameRef = useRef(0);
-
-	const renderedFrameRef = useRef(-1);
-
-	/*
-	|--------------------------------------------------------------------------
-	| CANVAS DIMENSIONS
-	|--------------------------------------------------------------------------
-	*/
-
 	const dimensionsRef = useRef({
 		width: 0,
-
 		height: 0,
-
-		dpr: 1,
 	});
 
-	/*
-	|--------------------------------------------------------------------------
-	| RAF
-	|--------------------------------------------------------------------------
-	*/
+	const frameRef = useRef(0);
 
-	const renderRafRef = useRef(null);
+	const renderFrameRef = useRef(null);
 
-	/*
-	|--------------------------------------------------------------------------
-	| REACT STATE
-	|--------------------------------------------------------------------------
-	*/
+	const rafRef = useRef(null);
 
 	const [loadedCount, setLoadedCount] = useState(0);
 
@@ -233,76 +110,51 @@ export default function Hero({
 	);
 
 	/*
-	|--------------------------------------------------------------------------
-	| CAPTION REF
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * CAPTION REFS
+	 * --------------------------------------------------------------------------
+	 */
 
 	const setCaptionRef = useCallback((element, index) => {
 		captionRefs.current[index] = element;
 	}, []);
 
 	/*
-	|--------------------------------------------------------------------------
-	| RENDER FRAME
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * CANVAS RENDERER
+	 * --------------------------------------------------------------------------
+	 */
 
 	const renderFrame = useCallback((frameIndex) => {
 		const canvas = canvasRef.current;
 
-		const context = contextRef.current;
-
 		const images = imagesRef.current;
 
-		if (!canvas || !context || !images.length) {
+		if (!canvas || !images.length) {
 			return;
 		}
 
-		/*
-		 * Clamp requested frame.
-		 */
+		const context = canvas.getContext("2d", {
+			alpha: false,
+			desynchronized: true,
+		});
 
-		const targetIndex = Math.max(
+		if (!context) {
+			return;
+		}
+
+		const safeIndex = Math.max(
 			0,
-
-			Math.min(
-				Math.round(frameIndex),
-
-				images.length - 1
-			)
+			Math.min(Math.round(frameIndex), images.length - 1)
 		);
-
-		/*
-		 * IMPORTANT:
-		 *
-		 * Always remember the actual requested
-		 * frame, even if it isn't loaded.
-		 */
-
-		requestedFrameRef.current = targetIndex;
-
-		/*
-		 * Find the nearest available frame.
-		 */
-
-		const safeIndex = getNearestLoadedFrame(
-			targetIndex,
-
-			loadedFramesRef.current,
-
-			images.length
-		);
-
-		if (safeIndex < 0) {
-			return;
-		}
 
 		const image = images[safeIndex];
 
 		if (!image || !image.complete || image.naturalWidth === 0) {
 			return;
 		}
+
+		frameRef.current = safeIndex;
 
 		const { width, height } = dimensionsRef.current;
 
@@ -311,12 +163,14 @@ export default function Hero({
 		}
 
 		/*
-		 * Cover calculation.
+		 * Canvas uses cover behavior.
+		 *
+		 * This prevents distortion and fills the
+		 * complete viewport.
 		 */
 
 		const scale = Math.max(
 			width / image.naturalWidth,
-
 			height / image.naturalHeight
 		);
 
@@ -329,58 +183,19 @@ export default function Hero({
 		const y = (height - drawHeight) / 2;
 
 		/*
-		 * Draw image.
+		 * Draw the frame.
 		 */
 
-		context.drawImage(
-			image,
-
-			x,
-
-			y,
-
-			drawWidth,
-
-			drawHeight
-		);
-
-		/*
-		 * IMPORTANT:
-		 *
-		 * Store what was actually rendered,
-		 * not what was requested.
-		 */
-
-		renderedFrameRef.current = safeIndex;
+		context.drawImage(image, x, y, drawWidth, drawHeight);
 	}, []);
 
-	/*
-	|--------------------------------------------------------------------------
-	| SCHEDULE FRAME RENDER
-	|--------------------------------------------------------------------------
-	|
-	| requestAnimationFrame prevents multiple canvas draws during the same
-	| browser frame.
-	|
-	*/
-
-	const scheduleFrameRender = useCallback(() => {
-		if (renderRafRef.current !== null) {
-			return;
-		}
-
-		renderRafRef.current = requestAnimationFrame(() => {
-			renderRafRef.current = null;
-
-			renderFrame(requestedFrameRef.current);
-		});
-	}, [renderFrame]);
+	renderFrameRef.current = renderFrame;
 
 	/*
-	|--------------------------------------------------------------------------
-	| RESIZE CANVAS
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * CANVAS RESIZE
+	 * --------------------------------------------------------------------------
+	 */
 
 	const resizeCanvas = useCallback(() => {
 		const canvas = canvasRef.current;
@@ -391,45 +206,18 @@ export default function Hero({
 
 		const rect = canvas.getBoundingClientRect();
 
-		const dpr = Math.min(
-			window.devicePixelRatio || 1,
-
-			2
-		);
-
-		const width = Math.max(
-			1,
-
-			Math.round(rect.width)
-		);
-
-		const height = Math.max(
-			1,
-
-			Math.round(rect.height)
-		);
-
-		const dimensions = dimensionsRef.current;
-
 		/*
-		 * If only the canvas CSS dimensions remain
-		 * unchanged, don't recreate the backing canvas.
+		 * Limit DPR to 2.
+		 *
+		 * A 3x/4x DPR canvas can become extremely expensive,
+		 * especially with 4K image sequences.
 		 */
 
-		if (
-			dimensions.width === width &&
-			dimensions.height === height &&
-			dimensions.dpr === dpr &&
-			contextRef.current
-		) {
-			scheduleFrameRender();
+		const dpr = Math.min(window.devicePixelRatio || 1, 2);
 
-			return;
-		}
+		const width = Math.max(1, Math.round(rect.width));
 
-		/*
-		 * Set actual canvas resolution.
-		 */
+		const height = Math.max(1, Math.round(rect.height));
 
 		canvas.width = Math.round(width * dpr);
 
@@ -437,15 +225,11 @@ export default function Hero({
 
 		dimensionsRef.current = {
 			width,
-
 			height,
-
-			dpr,
 		};
 
 		const context = canvas.getContext("2d", {
 			alpha: false,
-
 			desynchronized: true,
 		});
 
@@ -453,306 +237,104 @@ export default function Hero({
 			return;
 		}
 
-		contextRef.current = context;
-
-		/*
-		 * Work in CSS pixel coordinates.
-		 */
-
 		context.setTransform(dpr, 0, 0, dpr, 0, 0);
 
 		/*
-		 * Render the current requested frame.
+		 * Render current frame after resizing.
 		 */
 
-		scheduleFrameRender();
-	}, [scheduleFrameRender]);
+		renderFrame(frameRef.current);
+	}, [renderFrame]);
 
 	/*
-	|--------------------------------------------------------------------------
-	| PRELOAD IMAGE SEQUENCE
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * PRELOAD IMAGE SEQUENCE
+	 * --------------------------------------------------------------------------
+	 */
 
 	useEffect(() => {
 		let cancelled = false;
 
-		/*
-		 * Reset sequence state.
-		 */
-
-		const images = Array.from({
-			length: frameCount,
-		});
-
-		imagesRef.current = images;
-
-		loadedFramesRef.current = new Set();
-
-		requestedFrameRef.current = 0;
-
-		renderedFrameRef.current = -1;
-
+		const images = [];
 		let completed = 0;
 
-		let nextIndex = 0;
+		setLoadedCount(0);
+		setSequenceReady(false);
+		setSequenceError(false);
 
-		let activeRequests = 0;
-
-		let firstFrameReady = false;
-
-		let progressFrame = null;
-
-		const maxConcurrentRequests = DEFAULTS.maxConcurrentRequests;
-
-		/*
-		 * --------------------------------------------------------------
-		 * PROGRESS
-		 * --------------------------------------------------------------
-		 */
-
-		const flushProgress = () => {
-			progressFrame = null;
+		const updateProgress = () => {
+			completed += 1;
 
 			if (cancelled) {
 				return;
 			}
 
 			setLoadedCount(completed);
-		};
-
-		const requestProgressUpdate = () => {
-			if (progressFrame !== null) {
-				return;
-			}
-
-			progressFrame = requestAnimationFrame(flushProgress);
-		};
-
-		/*
-		 * --------------------------------------------------------------
-		 * FRAME LOADED
-		 * --------------------------------------------------------------
-		 */
-
-		const handleFrameLoaded = (index) => {
-			if (cancelled) {
-				return;
-			}
-
-			loadedFramesRef.current.add(index);
-
-			completed += 1;
-
-			activeRequests -= 1;
 
 			/*
-			 * ----------------------------------------------------------
-			 * FIRST FRAME
-			 * ----------------------------------------------------------
+			 * Start only after every frame is loaded.
 			 *
-			 * As soon as frame 001 is ready,
-			 * the hero can become visible.
+			 * This provides deterministic scrolling.
 			 */
 
-			if (!firstFrameReady && index === 0) {
-				firstFrameReady = true;
-
-				requestedFrameRef.current = 0;
-
+			if (completed === frameCount) {
 				setSequenceReady(true);
-
-				requestAnimationFrame(() => {
-					if (cancelled) {
-						return;
-					}
-
-					resizeCanvas();
-
-					renderFrame(0);
-				});
 			}
-
-			/*
-			 * ----------------------------------------------------------
-			 * IMPORTANT
-			 * ----------------------------------------------------------
-			 *
-			 * If the frame that just finished loading is the frame
-			 * currently requested by GSAP, render it immediately.
-			 */
-
-			const requestedFrame = requestedFrameRef.current;
-
-			if (index === requestedFrame) {
-				scheduleFrameRender();
-			}
-
-			requestProgressUpdate();
-
-			/*
-			 * Continue loading.
-			 */
-
-			loadNextFrame();
 		};
 
-		/*
-		 * --------------------------------------------------------------
-		 * FRAME ERROR
-		 * --------------------------------------------------------------
-		 */
-
-		const handleFrameError = () => {
-			if (cancelled) {
-				return;
-			}
-
-			completed += 1;
-
-			activeRequests -= 1;
-
-			setSequenceError(true);
-
-			requestProgressUpdate();
-
-			loadNextFrame();
-		};
-
-		/*
-		 * --------------------------------------------------------------
-		 * LOAD FRAME
-		 * --------------------------------------------------------------
-		 */
-
-		const loadFrame = (index) => {
+		for (let index = 0; index < frameCount; index += 1) {
 			const image = new Image();
-
-			/*
-			 * Decode asynchronously.
-			 */
 
 			image.decoding = "async";
 
-			/*
-			 * Do NOT use lazy loading.
-			 *
-			 * This is an animation sequence, not a normal image.
-			 */
-
-			if ("fetchPriority" in image) {
-				image.fetchPriority = index < 12 ? "high" : "auto";
-			}
-
-			images[index] = image;
-
-			image.onload = () => {
-				handleFrameLoaded(index);
-			};
-
-			image.onerror = () => {
-				handleFrameError();
-			};
+			image.loading = "eager";
 
 			image.src = createFrameUrl(
 				framePath,
-
 				frameExtension,
-
 				framePadding,
-
 				index
 			);
-		};
 
-		/*
-		 * --------------------------------------------------------------
-		 * CONCURRENT LOADER
-		 * --------------------------------------------------------------
-		 */
+			image.onload = updateProgress;
 
-		function loadNextFrame() {
-			while (
-				activeRequests < maxConcurrentRequests &&
-				nextIndex < frameCount &&
-				!cancelled
-			) {
-				const frameIndex = nextIndex;
+			image.onerror = () => {
+				if (cancelled) {
+					return;
+				}
 
-				nextIndex += 1;
+				setSequenceError(true);
 
-				activeRequests += 1;
+				/*
+				 * Still count failed frames so one missing
+				 * frame doesn't leave the loader stuck forever.
+				 */
 
-				loadFrame(frameIndex);
-			}
+				updateProgress();
+			};
+
+			images.push(image);
 		}
 
-		/*
-		 * Start loading.
-		 */
-
-		setLoadedCount(0);
-
-		setSequenceReady(false);
-
-		setSequenceError(false);
-
-		loadNextFrame();
-
-		/*
-		 * --------------------------------------------------------------
-		 * CLEANUP
-		 * --------------------------------------------------------------
-		 */
+		imagesRef.current = images;
 
 		return () => {
 			cancelled = true;
 
-			if (progressFrame !== null) {
-				cancelAnimationFrame(progressFrame);
-			}
-
 			images.forEach((image) => {
-				if (!image) {
-					return;
-				}
-
 				image.onload = null;
-
 				image.onerror = null;
-
-				/*
-				 * Abort the browser request where possible.
-				 */
-
-				image.src = "";
 			});
 
 			imagesRef.current = [];
-
-			loadedFramesRef.current = new Set();
 		};
-	}, [
-		frameCount,
-
-		framePath,
-
-		frameExtension,
-
-		framePadding,
-
-		renderFrame,
-
-		resizeCanvas,
-
-		scheduleFrameRender,
-	]);
+	}, [frameCount, framePath, frameExtension, framePadding]);
 
 	/*
-	|--------------------------------------------------------------------------
-	| RESIZE OBSERVER
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * RESIZE OBSERVER
+	 * --------------------------------------------------------------------------
+	 */
 
 	useEffect(() => {
 		if (!sequenceReady) {
@@ -769,9 +351,7 @@ export default function Hero({
 			observer.observe(canvasRef.current);
 		}
 
-		window.addEventListener("resize", resizeCanvas, {
-			passive: true,
-		});
+		window.addEventListener("resize", resizeCanvas);
 
 		return () => {
 			observer.disconnect();
@@ -781,10 +361,10 @@ export default function Hero({
 	}, [sequenceReady, resizeCanvas]);
 
 	/*
-	|--------------------------------------------------------------------------
-	| INITIAL FRAME
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * INITIAL FRAME
+	 * --------------------------------------------------------------------------
+	 */
 
 	useEffect(() => {
 		if (!sequenceReady) {
@@ -794,15 +374,15 @@ export default function Hero({
 		requestAnimationFrame(() => {
 			resizeCanvas();
 
-			renderFrame(requestedFrameRef.current);
+			renderFrame(0);
 		});
 	}, [sequenceReady, resizeCanvas, renderFrame]);
 
 	/*
-	|--------------------------------------------------------------------------
-	| GSAP SCROLL TIMELINE
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * GSAP SCROLL TIMELINE
+	 * --------------------------------------------------------------------------
+	 */
 
 	useGsap(
 		() => {
@@ -815,14 +395,12 @@ export default function Hero({
 			}
 
 			/*
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
 			 * REDUCED MOTION
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
 			 */
 
 			if (prefersReducedMotion) {
-				requestedFrameRef.current = 0;
-
 				renderFrame(0);
 
 				captionRefs.current.forEach((caption, index) => {
@@ -841,9 +419,9 @@ export default function Hero({
 			}
 
 			/*
-			 * ----------------------------------------------------------
-			 * INITIAL CAPTION STATE
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
+			 * INITIAL CAPTIONS
+			 * --------------------------------------------------------------
 			 */
 
 			captionRefs.current.forEach((caption, index) => {
@@ -859,9 +437,15 @@ export default function Hero({
 			});
 
 			/*
-			 * ----------------------------------------------------------
-			 * GSAP PLAYHEAD
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
+			 * PLAYHEAD
+			 * --------------------------------------------------------------
+			 *
+			 * This is the key difference from video.currentTime.
+			 *
+			 * GSAP only animates a number.
+			 *
+			 * Canvas rendering happens separately.
 			 */
 
 			const playhead = {
@@ -869,9 +453,43 @@ export default function Hero({
 			};
 
 			/*
-			 * ----------------------------------------------------------
+			 * Avoid rendering the same frame repeatedly.
+			 */
+
+			let requestedFrame = 0;
+
+			let renderedFrame = -1;
+
+			/*
+			 * --------------------------------------------------------------
+			 * FRAME RENDER LOOP
+			 * --------------------------------------------------------------
+			 */
+
+			const renderRequestedFrame = () => {
+				rafRef.current = null;
+
+				if (requestedFrame === renderedFrame) {
+					return;
+				}
+
+				renderedFrame = requestedFrame;
+
+				renderFrame(requestedFrame);
+			};
+
+			const requestRender = () => {
+				if (rafRef.current !== null) {
+					return;
+				}
+
+				rafRef.current = requestAnimationFrame(renderRequestedFrame);
+			};
+
+			/*
+			 * --------------------------------------------------------------
 			 * MASTER TIMELINE
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
 			 */
 
 			const timeline = gsap.timeline({
@@ -895,12 +513,6 @@ export default function Hero({
 						return `+=${window.innerHeight * (distance / 100)}`;
 					},
 
-					/*
-					 * Higher scrub = smoother but more delayed.
-					 *
-					 * 0.6 - 0.9 is generally good for image sequences.
-					 */
-
 					scrub,
 
 					anticipatePin: 1,
@@ -914,9 +526,9 @@ export default function Hero({
 			});
 
 			/*
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
 			 * FRAME ANIMATION
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
 			 */
 
 			timeline.to(
@@ -929,29 +541,18 @@ export default function Hero({
 					ease: "none",
 
 					onUpdate: () => {
-						const frame = Math.round(playhead.frame);
+						requestedFrame = Math.round(playhead.frame);
 
-						/*
-						 * GSAP requested frame.
-						 */
-
-						requestedFrameRef.current = frame;
-
-						/*
-						 * Render it on next browser frame.
-						 */
-
-						scheduleFrameRender();
+						requestRender();
 					},
 				},
-
 				0
 			);
 
 			/*
-			 * ----------------------------------------------------------
-			 * CAPTION TIMELINE
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
+			 * CAPTIONS
+			 * --------------------------------------------------------------
 			 */
 
 			const captionCount = captions.length;
@@ -971,45 +572,35 @@ export default function Hero({
 					const end = (index + 1) * sectionDuration;
 
 					/*
-					 * ------------------------------------------------
-					 * ENTER
-					 * ------------------------------------------------
+					 * First caption is already visible.
 					 */
 
 					if (index > 0) {
 						timeline.fromTo(
 							caption,
-
 							{
 								autoAlpha: 0,
-
 								y: DEFAULTS.captionY,
 							},
-
 							{
 								autoAlpha: 1,
-
 								y: 0,
 
 								duration: DEFAULTS.captionFadeDuration,
 
 								ease: "power3.out",
 							},
-
 							start
 						);
 					}
 
 					/*
-					 * ------------------------------------------------
-					 * EXIT
-					 * ------------------------------------------------
+					 * Fade caption out before next caption.
 					 */
 
 					if (index < captionCount - 1) {
 						timeline.to(
 							caption,
-
 							{
 								autoAlpha: 0,
 
@@ -1019,7 +610,6 @@ export default function Hero({
 
 								ease: "power3.in",
 							},
-
 							end - DEFAULTS.captionFadeDuration
 						);
 					}
@@ -1027,9 +617,9 @@ export default function Hero({
 			}
 
 			/*
-			 * ----------------------------------------------------------
-			 * SCROLLTRIGGER REFRESH
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
+			 * REFRESH
+			 * --------------------------------------------------------------
 			 */
 
 			requestAnimationFrame(() => {
@@ -1037,36 +627,29 @@ export default function Hero({
 			});
 
 			/*
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
 			 * CLEANUP
-			 * ----------------------------------------------------------
+			 * --------------------------------------------------------------
 			 */
 
 			return () => {
-				if (renderRafRef.current !== null) {
-					cancelAnimationFrame(renderRafRef.current);
+				if (rafRef.current !== null) {
+					cancelAnimationFrame(rafRef.current);
 
-					renderRafRef.current = null;
+					rafRef.current = null;
 				}
 			};
 		},
-
 		{
 			scope: heroRef,
 
 			dependencies: [
 				sequenceReady,
-
 				prefersReducedMotion,
-
 				frameCount,
-
 				captions.length,
-
 				desktopScrollDistance,
-
 				mobileScrollDistance,
-
 				scrub,
 			],
 
@@ -1075,25 +658,21 @@ export default function Hero({
 	);
 
 	/*
-	|--------------------------------------------------------------------------
-	| LOADING PROGRESS
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * LOADING PROGRESS
+	 * --------------------------------------------------------------------------
+	 */
 
 	const progress =
 		frameCount > 0
-			? Math.min(
-					100,
-
-					Math.round((loadedCount / frameCount) * 100)
-			  )
+			? Math.min(100, Math.round((loadedCount / frameCount) * 100))
 			: 0;
 
 	/*
-	|--------------------------------------------------------------------------
-	| HERO CLASS
-	|--------------------------------------------------------------------------
-	*/
+	 * --------------------------------------------------------------------------
+	 * CLASSES
+	 * --------------------------------------------------------------------------
+	 */
 
 	const heroClasses = [
 		styles.hero,
@@ -1107,19 +686,13 @@ export default function Hero({
 		.filter(Boolean)
 		.join(" ");
 
-	/*
-	|--------------------------------------------------------------------------
-	| RENDER
-	|--------------------------------------------------------------------------
-	*/
-
 	return (
 		<section ref={heroRef} className={heroClasses} aria-label="Hero">
 			<div ref={stageRef} className={styles.stage}>
 				{/*
-				 * --------------------------------------------------------------
-				 * POSTER
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
+				 * POSTER FALLBACK
+				 * ------------------------------------------------------------------
 				 */}
 
 				<div
@@ -1131,9 +704,9 @@ export default function Hero({
 				/>
 
 				{/*
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
 				 * CANVAS
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
 				 */}
 
 				<canvas
@@ -1143,35 +716,25 @@ export default function Hero({
 				/>
 
 				{/*
-				 * --------------------------------------------------------------
-				 * VIDEO OVERLAY
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
+				 * OVERLAYS
+				 * ------------------------------------------------------------------
 				 */}
 
 				<div className={styles.videoOverlay} aria-hidden="true" />
 
-				{/*
-				 * --------------------------------------------------------------
-				 * VIGNETTE
-				 * --------------------------------------------------------------
-				 */}
-
 				<div className={styles.vignette} aria-hidden="true" />
 
 				{/*
-				 * --------------------------------------------------------------
-				 * CAPTIONS
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
+				 * CAPTION CONTENT
+				 * ------------------------------------------------------------------
 				 */}
 
 				<div className={styles.content}>
 					<div className={styles.captionViewport}>
 						{captions.map(
-							(
-								{ eyebrow, title, description },
-
-								index
-							) => (
+							({ eyebrow, title, description }, index) => (
 								<div
 									key={`${title}-${index}`}
 									ref={(element) =>
@@ -1199,9 +762,9 @@ export default function Hero({
 				</div>
 
 				{/*
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
 				 * SCROLL INDICATOR
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
 				 */}
 
 				<div className={styles.scrollIndicator} aria-hidden="true">
@@ -1211,9 +774,9 @@ export default function Hero({
 				</div>
 
 				{/*
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
 				 * COUNTER
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
 				 */}
 
 				<div className={styles.heroCounter} aria-hidden="true">
@@ -1225,9 +788,9 @@ export default function Hero({
 				</div>
 
 				{/*
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
 				 * LOADER
-				 * --------------------------------------------------------------
+				 * ------------------------------------------------------------------
 				 */}
 
 				<div className={styles.loader} aria-hidden="true">
