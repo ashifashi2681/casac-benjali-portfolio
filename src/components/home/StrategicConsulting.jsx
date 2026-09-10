@@ -281,7 +281,7 @@ function StrategicConsulting() {
 								</span>
 								{i < JOURNEY.length - 1 ? (
 									<span aria-hidden="true" className="text-[clamp(1rem,0.7rem+1.2vw,1.8rem)] font-bold text-slate-700">
-										â†’
+										+
 									</span>
 								) : null}
 							</span>
