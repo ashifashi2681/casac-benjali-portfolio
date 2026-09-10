@@ -14,7 +14,7 @@ import UnlockYourNextLevel from "@/components/home/UnlockYourNextLevel";
 export default function Home() {
 	return (
 		<div className="bg-amber-800">
-			<Hero />
+			{/* <Hero /> */}
 			<ImpactAtAGlance />
 			<AboutCasacBenjali />
 			<MyExpertise />

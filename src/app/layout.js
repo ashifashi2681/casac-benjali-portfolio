@@ -33,3 +33,9 @@ export default function RootLayout({ children }) {
 		</html>
 	);
 }
+
+/* 
+refer my current theme and animations. complete this selected section. use tailwind not css module for this section. if any images required for this secion, keep it blank. i'll add it later.
+*/
+
+/* full seo friedly content only for "My Expertise". make the contents short, becouse i have lots of other sections and thats make page too long. don't generate images. while generating content, structure the content based on 'what premium animated section look like.' */

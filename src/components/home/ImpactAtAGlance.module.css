@@ -1,0 +1,271 @@
+/*
+|--------------------------------------------------------------------------
+| IMPACT AT A GLANCE
+|--------------------------------------------------------------------------
+*/
+
+.section {
+	position: relative;
+
+	width: 100%;
+
+	padding:
+		clamp(96px, 12vw, 180px)
+		clamp(24px, 7vw, 120px);
+
+	overflow: hidden;
+
+	background: #050505;
+
+	isolation: isolate;
+}
+
+.glow {
+	position: absolute;
+
+	top: 30%;
+
+	left: 50%;
+
+	z-index: 0;
+
+	width: min(880px, 90vw);
+
+	height: min(880px, 90vw);
+
+	transform: translate(-50%, -50%);
+
+	background:
+		radial-gradient(
+			circle at center,
+			rgba(255, 255, 255, 0.06) 0%,
+			rgba(255, 255, 255, 0.02) 40%,
+			transparent 70%
+		);
+
+	pointer-events: none;
+}
+
+.inner {
+	position: relative;
+
+	z-index: 1;
+
+	display: grid;
+
+	gap: clamp(40px, 6vw, 72px);
+
+	width: min(100%, 72rem);
+
+	margin-inline: auto;
+}
+
+/*
+|--------------------------------------------------------------------------
+| NARRATIVE
+|--------------------------------------------------------------------------
+*/
+
+.narrative {
+	display: grid;
+
+	gap: 20px;
+
+	max-width: 60rem;
+}
+
+.heading {
+	margin: 0;
+
+	color: rgb(248 250 252);
+
+	font-size: clamp(1.5rem, 1.1rem + 1.8vw, 2.6rem);
+
+	font-weight: 700;
+
+	line-height: 1.08;
+
+	letter-spacing: -0.02em;
+}
+
+.lede {
+	margin: 0;
+
+	max-width: 58ch;
+
+	color: rgb(160 168 182);
+
+	font-size: clamp(0.95rem, 0.85rem + 0.35vw, 1.15rem);
+
+	font-weight: 400;
+
+	line-height: 1.65;
+}
+
+.lede strong {
+	color: rgb(245 247 250);
+
+	font-weight: 600;
+}
+
+/*
+|--------------------------------------------------------------------------
+| STATS GRID
+|--------------------------------------------------------------------------
+*/
+
+.grid {
+	display: grid;
+
+	grid-template-columns: repeat(3, 1fr);
+
+	gap: clamp(18px, 2vw, 28px);
+
+	margin: 0;
+
+	padding: 0;
+
+	list-style: none;
+}
+
+.card {
+	position: relative;
+
+	display: grid;
+
+	gap: 12px;
+
+	padding: clamp(24px, 3vw, 38px);
+
+	border: 1px solid rgba(255, 255, 255, 0.09);
+
+	border-radius: 18px;
+
+	background: rgba(255, 255, 255, 0.035);
+
+	backdrop-filter: blur(12px);
+
+	transition:
+		border-color 0.4s ease,
+		background 0.4s ease,
+		transform 0.4s ease;
+}
+
+.card:hover {
+	border-color: rgba(255, 255, 255, 0.22);
+
+	background: rgba(255, 255, 255, 0.06);
+
+	transform: translateY(-4px);
+}
+
+/*
+|--------------------------------------------------------------------------
+| STAT CONTENT
+|--------------------------------------------------------------------------
+*/
+
+.value {
+	display: flex;
+
+	align-items: baseline;
+
+	flex-wrap: wrap;
+
+	gap: 6px;
+
+	margin: 0;
+
+	color: #ffffff;
+
+	font-size: clamp(2rem, 1.4rem + 2.4vw, 3.4rem);
+
+	font-weight: 800;
+
+	line-height: 1;
+
+	letter-spacing: -0.04em;
+
+	font-variant-numeric: tabular-nums;
+}
+
+.suffix {
+	color: rgba(255, 255, 255, 0.62);
+
+	font-size: 0.45em;
+
+	font-weight: 700;
+
+	letter-spacing: -0.01em;
+}
+
+.label {
+	margin: 4px 0 0;
+
+	color: rgb(248 250 252);
+
+	font-size: 0.78rem;
+
+	font-weight: 700;
+
+	line-height: 1.3;
+
+	text-transform: uppercase;
+
+	letter-spacing: 0.12em;
+}
+
+.description {
+	margin: 0;
+
+	color: rgb(150 158 172);
+
+	font-size: 0.9rem;
+
+	font-weight: 400;
+
+	line-height: 1.55;
+}
+
+/*
+|--------------------------------------------------------------------------
+| TABLET
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 1024px) {
+	.grid {
+		grid-template-columns: repeat(2, 1fr);
+	}
+}
+
+/*
+|--------------------------------------------------------------------------
+| MOBILE
+|--------------------------------------------------------------------------
+*/
+
+@media (max-width: 640px) {
+	.grid {
+		grid-template-columns: 1fr;
+	}
+
+	.card {
+		padding: 24px 20px;
+	}
+}
+
+/*
+|--------------------------------------------------------------------------
+| REDUCED MOTION
+|--------------------------------------------------------------------------
+*/
+
+@media (prefers-reduced-motion: reduce) {
+	.card,
+	.card:hover {
+		transition: none;
+
+		transform: none;
+	}
+}
