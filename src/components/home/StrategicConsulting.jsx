@@ -1,7 +1,7 @@
 ﻿"use client";
 
 import { useRef } from "react";
-import SectionTitle from "../ui/SectionTitle/SectionTitle";
+import SectionTitle from "../ui/SectionTitle";
 import { gsap, ScrollTrigger } from "@/animations/gsap";
 import { useGsap } from "@/hooks/useGsap";
 
@@ -46,7 +46,6 @@ const STAGES = [
 
 const JOURNEY = ["Understand", "Strategise", "Execute", "Improve", "Grow"];
 
-
 function StrategicConsulting() {
 	const rootRef = useRef(null);
 
@@ -55,7 +54,9 @@ function StrategicConsulting() {
 			const root = rootRef.current;
 			if (!root) return;
 
-			const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			const reducedMotion = window.matchMedia(
+				"(prefers-reduced-motion: reduce)"
+			).matches;
 
 			/*
 			 * Section entry â€” header + intro.
@@ -120,7 +121,10 @@ function StrategicConsulting() {
 			/*
 			 * Closing journey words.
 			 */
-			const journeyWords = gsap.utils.toArray(`[data-journey-word]`, root);
+			const journeyWords = gsap.utils.toArray(
+				`[data-journey-word]`,
+				root
+			);
 
 			journeyWords.forEach((word, i) => {
 				gsap.fromTo(
@@ -170,7 +174,9 @@ function StrategicConsulting() {
 	);
 
 	return (
-		<section ref={rootRef} className="relative w-full overflow-hidden bg-[#050505]">
+		<section
+			ref={rootRef}
+			className="relative w-full overflow-hidden bg-[#050505]">
 			{/* ambient glow */}
 			<span
 				aria-hidden="true"
@@ -183,29 +189,44 @@ function StrategicConsulting() {
 					<SectionTitle title="Strategic Consulting" />
 
 					<div className="grid gap-6">
-						<p data-reveal="" className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+						<p
+							data-reveal=""
+							className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
 							01 / Consulting
 						</p>
 
 						<h3
 							data-reveal=""
-							className="m-0 max-w-22ch text-[clamp(1.7rem,1.2rem+2.2vw,3.4rem)] font-bold leading-[1.05] tracking-[-0.03em] text-slate-50"
-						>
+							className="m-0 max-w-22ch text-[clamp(1.7rem,1.2rem+2.2vw,3.4rem)] font-bold leading-[1.05] tracking-[-0.03em] text-slate-50">
 							Strategy That Moves Businesses Forward
 						</h3>
 
-						<div data-reveal="" className="grid max-w-62ch gap-5 text-[clamp(0.95rem,0.85rem+0.35vw,1.15rem)] leading-[1.7] text-slate-400">
+						<div
+							data-reveal=""
+							className="grid max-w-62ch gap-5 text-[clamp(0.95rem,0.85rem+0.35vw,1.15rem)] leading-[1.7] text-slate-400">
 							<p className="m-0">
 								Casac Benjali provides{" "}
-								<strong className="font-semibold text-slate-50">strategic business consulting</strong> to help
-								organisations identify opportunities, overcome challenges, improve performance, and build
-								practical strategies for sustainable growth.
+								<strong className="font-semibold text-slate-50">
+									strategic business consulting
+								</strong>{" "}
+								to help organisations identify opportunities,
+								overcome challenges, improve performance, and
+								build practical strategies for sustainable
+								growth.
 							</p>
 							<p className="m-0">
-								With strategic consulting experience dating back to{" "}
-								<strong className="font-semibold text-slate-50">2011 in Dubai</strong>, his approach combines
-								strategic thinking with practical business and entrepreneurial experience across{" "}
-								<strong className="font-semibold text-slate-50">India and the GCC</strong>.
+								With strategic consulting experience dating back
+								to{" "}
+								<strong className="font-semibold text-slate-50">
+									2011 in Dubai
+								</strong>
+								, his approach combines strategic thinking with
+								practical business and entrepreneurial
+								experience across{" "}
+								<strong className="font-semibold text-slate-50">
+									India and the GCC
+								</strong>
+								.
 							</p>
 						</div>
 					</div>
@@ -213,15 +234,21 @@ function StrategicConsulting() {
 			</div>
 
 			{/* STAGE JOURNEY â€” sticky rail with progress line */}
-			<div data-journey-scroll="" className="relative z-1 mt-[clamp(72px,9vw,140px)] px-[clamp(24px,7vw,120px)]">
+			<div
+				data-journey-scroll=""
+				className="relative z-1 mt-[clamp(72px,9vw,140px)] px-[clamp(24px,7vw,120px)]">
 				<div className="mx-auto grid w-full max-w-[72rem] gap-[clamp(36px,5vw,64px)]">
-					<p data-reveal="" className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+					<p
+						data-reveal=""
+						className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
 						Consulting Expertise
 					</p>
 
 					<div className="relative grid grid-cols-[auto_minmax(0,1fr)] gap-[clamp(20px,3vw,48px)]">
 						{/* progress rail */}
-						<div className="relative w-px bg-white/12" aria-hidden="true">
+						<div
+							className="relative w-px bg-white/12"
+							aria-hidden="true">
 							<div
 								data-progress-fill=""
 								className="absolute inset-x-0 top-0 h-full origin-top scale-y-0 bg-white"
@@ -233,24 +260,24 @@ function StrategicConsulting() {
 								<li
 									data-stage=""
 									key={stage.num}
-									className="grid gap-3"
-								>
+									className="grid gap-3">
 									<div className="grid items-baseline gap-[clamp(14px,2vw,32px)] sm:grid-cols-[auto_minmax(0,1fr)]">
 										<span
 											aria-hidden="true"
-											className="text-[clamp(2rem,1.4rem+2.4vw,4rem)] font-extrabold leading-none tracking-[-0.05em] text-white/20 tabular-nums"
-										>
+											className="text-[clamp(2rem,1.4rem+2.4vw,4rem)] font-extrabold leading-none tracking-[-0.05em] text-white/20 tabular-nums">
 											{stage.num}
-									</span>
-									<div className="grid gap-3">
-										<h4 className="m-0 text-[clamp(1.4rem,1.05rem+1.6vw,2.8rem)] font-bold leading-[1.08] tracking-[-0.02em] text-slate-50">
-											{stage.title}
-										</h4>
-										<p className="m-0 max-w-56ch leading-[1.65] text-slate-400">{stage.description}</p>
+										</span>
+										<div className="grid gap-3">
+											<h4 className="m-0 text-[clamp(1.4rem,1.05rem+1.6vw,2.8rem)] font-bold leading-[1.08] tracking-[-0.02em] text-slate-50">
+												{stage.title}
+											</h4>
+											<p className="m-0 max-w-56ch leading-[1.65] text-slate-400">
+												{stage.description}
+											</p>
+										</div>
 									</div>
-								</div>
-							</li>
-						))}
+								</li>
+							))}
 						</ul>
 					</div>
 				</div>
@@ -259,28 +286,37 @@ function StrategicConsulting() {
 			{/* CLOSING JOURNEY + CTA */}
 			<div
 				data-journey=""
-				className="relative z-1 mt-[clamp(96px,12vw,180px)] px-[clamp(24px,7vw,120px)] pb-[clamp(96px,12vw,180px)]"
-			>
+				className="relative z-1 mt-[clamp(96px,12vw,180px)] px-[clamp(24px,7vw,120px)] pb-[clamp(96px,12vw,180px)]">
 				<div className="mx-auto grid w-full max-w-[72rem] gap-[clamp(36px,5vw,64px)]">
 					<div data-reveal="" className="grid gap-5">
-						<p className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">From Strategy to Execution</p>
+						<p className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+							From Strategy to Execution
+						</p>
 						<h4 className="m-0 max-w-40ch text-[clamp(1.4rem,1rem+1.8vw,2.8rem)] font-bold leading-[1.08] tracking-[-0.02em] text-slate-50">
-							Strategic consulting is focused on turning business challenges and opportunities into{" "}
-							<span className="text-slate-400">clear strategies, practical action, and measurable progress</span>.
+							Strategic consulting is focused on turning business
+							challenges and opportunities into{" "}
+							<span className="text-slate-400">
+								clear strategies, practical action, and
+								measurable progress
+							</span>
+							.
 						</h4>
 					</div>
 
 					<div className="flex flex-wrap items-baseline gap-x-[clamp(14px,2.4vw,32px)] gap-y-3">
 						{JOURNEY.map((word, i) => (
-							<span key={word} className="inline-flex items-baseline gap-[clamp(14px,2.4vw,32px)]">
+							<span
+								key={word}
+								className="inline-flex items-baseline gap-[clamp(14px,2.4vw,32px)]">
 								<span
 									data-journey-word=""
-									className="text-[clamp(1.5rem,1rem+2.2vw,3.4rem)] font-extrabold leading-none tracking-[-0.04em] text-slate-50"
-								>
+									className="text-[clamp(1.5rem,1rem+2.2vw,3.4rem)] font-extrabold leading-none tracking-[-0.04em] text-slate-50">
 									{word}
 								</span>
 								{i < JOURNEY.length - 1 ? (
-									<span aria-hidden="true" className="text-[clamp(1rem,0.7rem+1.2vw,1.8rem)] font-bold text-slate-700">
+									<span
+										aria-hidden="true"
+										className="text-[clamp(1rem,0.7rem+1.2vw,1.8rem)] font-bold text-slate-700">
 										+
 									</span>
 								) : null}
@@ -288,20 +324,26 @@ function StrategicConsulting() {
 						))}
 					</div>
 
-					<div data-outro="" className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-4">
+					<div
+						data-outro=""
+						className="flex flex-wrap items-center gap-x-8 gap-y-4 pt-4">
 						{[
-							{ label: "Explore Strategic Consulting", href: "/contact" },
+							{
+								label: "Explore Strategic Consulting",
+								href: "/contact",
+							},
 							{ label: "Book a Consultation", href: "/contact" },
 						].map((link) => (
 							<a
 								key={link.label}
 								href={link.href}
-								className="group inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.14em] text-slate-50 transition-colors duration-300 hover:text-white"
-							>
+								className="group inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.14em] text-slate-50 transition-colors duration-300 hover:text-white">
 								<span className="border-b border-white/25 pb-1 transition-colors duration-300 group-hover:border-white/70">
 									{link.label}
 								</span>
-								<span aria-hidden="true" className="inline-block transition-transform duration-300 group-hover:translate-x-1">
+								<span
+									aria-hidden="true"
+									className="inline-block transition-transform duration-300 group-hover:translate-x-1">
 									â†’
 								</span>
 							</a>

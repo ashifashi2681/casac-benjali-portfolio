@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function BharatClub() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Bharat Business Club" />
 		</div>
-  );
+	);
 }
 
-export default BharatClub
+export default BharatClub;

@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function EntrepreneurialJourney() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="My Entrepreneurial Journey" />
 		</div>
-  );
+	);
 }
 
-export default EntrepreneurialJourney
+export default EntrepreneurialJourney;

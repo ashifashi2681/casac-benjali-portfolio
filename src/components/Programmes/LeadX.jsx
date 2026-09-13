@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function LeadX() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="LeadX" />
 		</div>
-  );
+	);
 }
 
-export default LeadX
+export default LeadX;

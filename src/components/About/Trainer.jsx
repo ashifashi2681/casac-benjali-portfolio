@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function Trainer() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Global Trainer" />
 		</div>
-  );
+	);
 }
 
-export default Trainer
+export default Trainer;

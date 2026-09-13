@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function Help() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="How Can I Help You?" />
 		</div>
-  );
+	);
 }
 
-export default Help
+export default Help;

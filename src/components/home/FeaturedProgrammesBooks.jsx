@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function FeaturedProgrammesBooks() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Featured Programmes & Books" />
 		</div>
-  );
+	);
 }
 
-export default FeaturedProgrammesBooks
+export default FeaturedProgrammesBooks;

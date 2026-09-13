@@ -17,49 +17,63 @@
 }
 
 .rail {
+	/* Palette is derived from the global.css theme tokens. */
+	--rail-accent: var(--color-brand-blue);
+	--rail-accent-hover: var(--color-brand-blue-hover);
+	--rail-accent-active: var(--color-brand-blue-active);
+	--rail-accent-dark: var(--color-brand-blue-dark);
+	--rail-gold: var(--color-brand-gold);
+	--rail-on-brand: var(--color-foreground-on-brand);
+	--rail-shadow-deep: var(--color-background-deep);
+
 	position: relative;
+	isolation: isolate;
 	display: flex;
-	/* grid-template-columns: repeat(4, minmax(5.75rem, auto)); */
 	align-items: center;
-	gap: 0.15rem;
-	min-height: 4.75rem;
-	padding: 0.45rem;
-	border: 1px solid rgb(255 255 255 / 0.3);
+	gap: 0.3rem;
+	min-height: 4.85rem;
+	padding: 0.5rem;
+	border: 1px solid color-mix(in srgb, var(--rail-on-brand) 30%, transparent);
 	border-radius: 999px;
 	overflow: visible;
-	background:
-		radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgb(255 255 255 / 0.34), transparent 34%),
-		linear-gradient(135deg, rgb(29 155 255 / 0.96), rgb(0 96 220 / 0.96));
+	background: linear-gradient(
+		135deg,
+		color-mix(in srgb, var(--rail-accent) 96%, transparent),
+		color-mix(in srgb, var(--rail-accent-dark) 96%, transparent)
+	);
 	box-shadow:
-		inset 0 1px 0 rgb(255 255 255 / 0.44),
-		inset 0 -22px 40px rgb(0 37 126 / 0.22),
-		0 24px 80px rgb(0 63 170 / 0.24),
-		0 12px 34px rgb(0 0 0 / 0.18);
+		inset 0 1px 0 color-mix(in srgb, var(--rail-on-brand) 44%, transparent),
+		inset 0 -22px 40px color-mix(in srgb, var(--rail-shadow-deep) 26%, transparent),
+		0 24px 80px color-mix(in srgb, var(--rail-accent-dark) 24%, transparent),
+		0 12px 34px color-mix(in srgb, var(--rail-shadow-deep) 20%, transparent);
 	backdrop-filter: blur(26px) saturate(170%);
 	-webkit-backdrop-filter: blur(26px) saturate(170%);
 }
 
-/* .rail::before {
+/* Cursor glow that trails the pointer across the rail. Sits above the rail
+   surface but below the items and the liquid indicator. */
+.rail::before {
 	position: absolute;
-	inset: 1px;
+	inset: 0;
 	z-index: -1;
 	content: "";
 	border-radius: inherit;
-	background:
-		linear-gradient(115deg, rgb(255 255 255 / 0.42), transparent 28%, transparent 64%, rgb(255 255 255 / 0.2)),
-		radial-gradient(130% 120% at 16% 8%, rgb(255 255 255 / 0.22), transparent 36%);
+	background: radial-gradient(
+		circle at var(--glow-x, 50%) var(--glow-y, 50%),
+		color-mix(in srgb, var(--rail-on-brand) 40%, transparent),
+		color-mix(in srgb, var(--rail-on-brand) 12%, transparent) 22%,
+		transparent 40%
+	);
+	opacity: 0;
+	transition: opacity 320ms ease;
 	pointer-events: none;
-} */
-/* 
-.rail::after {
-	position: absolute;
-	inset: auto 12%;
-	top: 0.34rem;
-	height: 1px;
-	content: "";
-	background: linear-gradient(90deg, transparent, rgb(255 255 255 / 0.72), transparent);
-	pointer-events: none;
-} */
+}
+
+.rail:hover::before,
+.rail:focus-within::before {
+	opacity: 1;
+}
+
 
 .indicator {
 	position: absolute;
@@ -68,21 +82,47 @@
 	z-index: 0;
 	width: 8rem;
 	height: 6.25rem;
-	border: 1px solid rgb(255 255 255 / 0.48);
+	border: 1px solid color-mix(in srgb, var(--rail-on-brand) 48%, transparent);
 	border-radius: 2.1rem;
 	overflow: hidden;
-	background:
-		radial-gradient(circle at var(--pointer-x, 50%) var(--pointer-y, 50%), rgb(255 255 255 / 0.5), transparent 34%),
-		linear-gradient(145deg, rgb(38 163 255 / 0.76), rgb(0 91 217 / 0.74));
+	background: linear-gradient(
+		145deg,
+		color-mix(in srgb, var(--rail-accent-hover) 76%, transparent),
+		color-mix(in srgb, var(--rail-accent-active) 74%, transparent)
+	);
 	box-shadow:
-		inset 0 1px 0 rgb(255 255 255 / 0.68),
-		inset 0 -28px 52px rgb(4 42 139 / 0.26),
-		0 16px 36px rgb(0 52 150 / 0.28),
-		0 0 0 1px rgb(255 255 255 / 0.1);
+		inset 0 1px 0 color-mix(in srgb, var(--rail-on-brand) 68%, transparent),
+		inset 0 -28px 52px color-mix(in srgb, var(--rail-shadow-deep) 26%, transparent),
+		0 16px 36px color-mix(in srgb, var(--rail-accent-dark) 28%, transparent),
+		0 0 0 1px color-mix(in srgb, var(--rail-on-brand) 10%, transparent);
 	backdrop-filter: blur(30px) saturate(190%) contrast(112%);
 	-webkit-backdrop-filter: blur(30px) saturate(190%) contrast(112%);
 	transform: translate3d(0, -50%, 0);
+	/* Hidden until GSAP positions it on the active item (no wrong-position flash). */
+	opacity: 0;
+	visibility: hidden;
 	pointer-events: none;
+}
+
+/* Cursor glow inside the active pill, tracked with pill-relative coordinates
+   (--pointer-x/--pointer-y are set on the indicator element itself). */
+.indicatorGlow {
+	position: absolute;
+	inset: 0;
+	background: radial-gradient(
+		circle at var(--pointer-x, 50%) var(--pointer-y, 50%),
+		color-mix(in srgb, var(--rail-on-brand) 50%, transparent),
+		transparent 44%
+	);
+	mix-blend-mode: screen;
+	opacity: 0;
+	transition: opacity 320ms ease;
+	pointer-events: none;
+}
+
+.rail:hover .indicatorGlow,
+.rail:focus-within .indicatorGlow {
+	opacity: 1;
 }
 
 .indicator::before,
@@ -97,11 +137,11 @@
 	background:
 		conic-gradient(
 			from 140deg,
-			rgb(255 77 148 / 0.02),
-			rgb(255 255 255 / 0.35),
-			rgb(94 219 255 / 0.32),
-			rgb(123 95 255 / 0.18),
-			rgb(255 77 148 / 0.02)
+			transparent,
+			color-mix(in srgb, var(--rail-on-brand) 35%, transparent),
+			color-mix(in srgb, var(--rail-accent-hover) 32%, transparent),
+			color-mix(in srgb, var(--rail-gold) 30%, transparent),
+			transparent
 		);
 	filter: blur(18px);
 	animation: liquidRotate 7s linear infinite;
@@ -111,9 +151,18 @@
 	inset: 0.48rem 16%;
 	border-radius: 999px;
 	background:
-		linear-gradient(180deg, rgb(255 255 255 / 0.55), rgb(255 255 255 / 0.06)),
-		linear-gradient(90deg, transparent, rgb(255 255 255 / 0.32), transparent);
-	box-shadow: 0 4.75rem 0 -0.08rem rgb(255 255 255 / 0.28);
+		linear-gradient(
+			180deg,
+			color-mix(in srgb, var(--rail-on-brand) 55%, transparent),
+			color-mix(in srgb, var(--rail-on-brand) 6%, transparent)
+		),
+		linear-gradient(
+			90deg,
+			transparent,
+			color-mix(in srgb, var(--rail-on-brand) 32%, transparent),
+			transparent
+		);
+	box-shadow: 0 4.75rem 0 -0.08rem color-mix(in srgb, var(--rail-on-brand) 28%, transparent);
 	opacity: 0.82;
 	mix-blend-mode: screen;
 }
@@ -129,64 +178,50 @@
 	padding: 0.75rem 1rem;
 	border: 0;
 	border-radius: 999px;
-	color: rgb(202 230 255 / 0.78);
+	color: color-mix(in srgb, var(--rail-on-brand) 78%, transparent);
 	font: inherit;
-	font-size: 0.91rem;
+	font-size: var(--text-sm);
 	font-weight: 700;
 	line-height: 1;
 	letter-spacing: 0;
 	text-decoration: none;
+	white-space: nowrap;
 	background: transparent;
-	transition:
-		color 220ms ease,
-		transform 220ms ease;
+	/* Color only — a CSS transform transition here would fight GSAP's tween. */
+	transition: color 220ms ease;
 	will-change: transform;
 }
 
 .item:hover,
 .item:focus-visible {
-	color: rgb(255 255 255 / 0.98);
+	color: color-mix(in srgb, var(--rail-on-brand) 98%, transparent);
 }
 
 .item:focus-visible {
-	outline: 2px solid rgb(255 255 255 / 0.76);
+	outline: 2px solid color-mix(in srgb, var(--rail-on-brand) 76%, transparent);
 	outline-offset: 0.35rem;
 }
 
 .itemActive {
-	color: rgb(255 255 255);
+	color: var(--rail-on-brand);
 }
 
-.icon {
-	display: grid;
-	place-items: center;
-	width: 1.55rem;
-	height: 1.55rem;
-	border-radius: 0.58rem;
-	font-size: 1rem;
-	line-height: 1;
-	text-shadow: 0 0 18px rgb(255 255 255 / 0.46);
-}
-
+/* Labels are plain text, so they flow naturally instead of living in a fixed
+   box. The active item's label gets the brighter, lifted treatment. */
+.icon,
 .label {
-	display: inline-block;
-	max-width: 0;
-	overflow: hidden;
-	opacity: 0;
-	transform: translateX(-0.35rem);
+	display: inline-flex;
+	align-items: center;
+	line-height: 1;
 	white-space: nowrap;
 }
 
-.itemActive .label {
-	max-width: 7rem;
-	margin-left: 0.55rem;
-	opacity: 1;
-	transform: translateX(0);
-	transition:
-		max-width 420ms cubic-bezier(0.16, 1, 0.3, 1),
-		margin-left 420ms cubic-bezier(0.16, 1, 0.3, 1),
-		opacity 220ms ease 90ms,
-		transform 420ms cubic-bezier(0.16, 1, 0.3, 1);
+.icon {
+	text-shadow: 0 0 18px color-mix(in srgb, var(--rail-on-brand) 46%, transparent);
+}
+
+.label {
+	text-shadow: 0 1px 14px color-mix(in srgb, var(--rail-shadow-deep) 40%, transparent);
 }
 
 @keyframes liquidRotate {
@@ -202,12 +237,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+	.rail::before,
+	.indicatorGlow {
+		transition: none;
+	}
+
 	.indicator::before {
 		animation: none;
 	}
 
-	.item,
-	.itemActive .label {
+	.item {
 		transition: none;
 	}
 }

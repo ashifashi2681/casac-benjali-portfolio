@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function MondayClub() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Monday Business Club" />
 		</div>
-  );
+	);
 }
 
-export default MondayClub
+export default MondayClub;

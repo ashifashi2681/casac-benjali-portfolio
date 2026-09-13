@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function SalesCoach() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Sales Coach" />
 		</div>
-  );
+	);
 }
 
-export default SalesCoach
+export default SalesCoach;

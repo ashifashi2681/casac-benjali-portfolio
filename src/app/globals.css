@@ -9,3 +9,58 @@
     cursor: none !important;
   }
 }
+
+@theme {
+	--text-*: initial;
+	--text-xxs: clamp(9.26px, 0.03vi + 9.16px, 9.63px);
+	--text-xs: clamp(11.11px, 0.09vi + 10.81px, 12.16px);
+	--text-sm: clamp(13.33px, 0.17vi + 12.8px, 15.2px);
+	--text-base: clamp(16px, 0.27vi + 15.14px, 19px);
+	--text-md: clamp(19.2px, 0.41vi + 17.9px, 23.75px);
+	--text-lg: clamp(23.04px, 0.59vi + 21.14px, 29.69px);
+	--text-xl: clamp(27.65px, 0.84vi + 24.94px, 37.11px);
+	--text-xxl: clamp(33.18px, 1.18vi + 29.4px, 46.39px);
+	--text-xxxl: clamp(39.81px, 1.62vi + 34.62px, 57.98px);
+	--text-xxxxl: clamp(47.77px, 2.19vi + 40.77px, 72.48px);
+	--text-xxxxxl: clamp(57.33px, 2.91vi + 48.03px, 90.6px);
+}
+
+@theme {
+	 /* ---------- Brand ---------- */
+  --color-brand-blue: #00a3ff;
+  --color-brand-blue-hover: #1ab0ff;
+  --color-brand-blue-active: #008bd9;
+  --color-brand-blue-dark: #007cc2;
+  --color-brand-blue-soft: #0b2d45;
+
+  --color-brand-gold: #d99a32;
+  --color-brand-gold-hover: #e5aa45;
+  --color-brand-gold-active: #bd8125;
+  --color-brand-gold-dark: #a87322;
+  --color-brand-gold-soft: #3a2914;
+
+  /* ---------- Backgrounds ---------- */
+  --color-background-elevated: #0b111a;
+  --color-background: #070b12;
+  --color-background-deep: #05080d;
+
+  /* ---------- Surfaces ---------- */
+  --color-surface: #101722;
+  --color-surface-hover: #151f2c;
+  --color-surface-active: #1a2635;
+  --color-surface-soft: #0d141e;
+  --color-surface-muted: #18212d;
+
+  /* ---------- Borders ---------- */
+  --color-border: #202b3a;
+  --color-border-subtle: #17212d;
+  --color-border-strong: #334155;
+  --color-border-brand: #00a3ff;
+
+  /* ---------- Typography ---------- */
+  --color-foreground: #f5f7fa;
+  --color-foreground-secondary: #a0a8b6;
+  --color-foreground-tertiary: #6f7b8d;
+  --color-foreground-disabled: #4b5565;
+  --color-foreground-on-brand: #ffffff;
+}

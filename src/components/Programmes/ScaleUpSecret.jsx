@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function ScaleUpSecret() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Business Scale-Up Secret" />
 		</div>
-  );
+	);
 }
 
-export default ScaleUpSecret
+export default ScaleUpSecret;

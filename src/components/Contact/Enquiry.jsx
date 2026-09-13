@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from './../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function Enquiry() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="LBook an Enquiry / Consultation" />
 		</div>
-  );
+	);
 }
 
-export default Enquiry
+export default Enquiry;

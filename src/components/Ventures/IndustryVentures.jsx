@@ -1,13 +1,13 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function IndustryVentures() {
-  return (
+	return (
 		<div>
 			{" "}
 			<SectionTitle title="Ventures Across Industries" />
 		</div>
-  );
+	);
 }
 
-export default IndustryVentures
+export default IndustryVentures;

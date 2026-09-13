@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function Venture() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Business Ventures" />
 		</div>
-  );
+	);
 }
 
-export default Venture
+export default Venture;

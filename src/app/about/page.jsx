@@ -14,8 +14,8 @@ function About() {
   return (
 		<div className="bg-red-800">
 			<AboutUs />
-      <SalesStrategy />
       <Journey />
+      <SalesStrategy />
       <Experience />
       <Consultant />
       <BusinessCoach />

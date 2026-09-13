@@ -1,51 +1,16 @@
 "use client";
 
 import { useRef } from "react";
-import SectionTitle from "../ui/SectionTitle/SectionTitle";
+import SectionTitle from "../ui/SectionTitle";
 import { gsap, ScrollTrigger } from "@/animations/gsap";
 import { useGsap } from "@/hooks/useGsap";
-import styles from "./ImpactAtAGlance.module.css";
-
-const STATS = [
-	{
-		value: 2500,
-		suffix: "+",
-		label: "Consulting Projects",
-		description:
-			"Strategic consulting and business transformation projects delivered across diverse industries.",
-	},
-	{
-		value: 500000,
-		suffix: "+",
-		label: "People Coached & Trained",
-		description:
-			"Entrepreneurs, business leaders, sales professionals, and teams supported through coaching and professional development.",
-	},
-	{
-		value: 15,
-		suffix: "+ Years",
-		label: "Strategic Consulting Experience",
-		description:
-			"Extensive experience helping businesses improve strategy, performance, leadership, sales, and operational efficiency.",
-	},
-	{
-		value: null,
-		display: "India & GCC",
-		label: "Global Experience",
-		description:
-			"Consulting, coaching, and training experience spanning businesses and professionals across India and GCC markets.",
-	},
-	{
-		value: null,
-		display: "Multiple",
-		label: "Business Experience",
-		description:
-			"Experience across business, education, sales, leadership, travel, consulting, and other professional sectors.",
-	},
-];
+import { HOME } from "@/data/home";
+import Desc from "../ui/Desc";
+import Card from "../ui/Card";
 
 function formatValue(value) {
-	if (value >= 1000000) return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
+	if (value >= 1000000)
+		return `${(value / 1000000).toFixed(1).replace(/\.0$/, "")}M`;
 	if (value >= 1000) return value.toLocaleString("en-US");
 	return String(value);
 }
@@ -59,7 +24,9 @@ function ImpactAtAGlance() {
 			const root = rootRef.current;
 			if (!root) return;
 
-			const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			const reducedMotion = window.matchMedia(
+				"(prefers-reduced-motion: reduce)"
+			).matches;
 
 			/*
 			 * Header + narrative reveal.
@@ -119,7 +86,9 @@ function ImpactAtAGlance() {
 								once: true,
 							},
 							onUpdate: () => {
-								el.textContent = formatValue(Math.round(state.value));
+								el.textContent = formatValue(
+									Math.round(state.value)
+								);
 							},
 							onComplete: () => {
 								el.textContent = formatValue(target);
@@ -160,39 +129,52 @@ function ImpactAtAGlance() {
 	);
 
 	return (
-		<section ref={rootRef} className={styles.section} aria-labelledby="impact-heading">
-			<span data-glow="" className={styles.glow} aria-hidden="true" />
+		<section
+			ref={rootRef}
+			aria-labelledby="impact-heading"
+			className="relative isolate w-full overflow-hidden bg-background py-[clamp(96px,12vw,180px)] px-[clamp(24px,7vw,120px)]">
+			<span
+				data-glow=""
+				aria-hidden="true"
+				className="pointer-events-none absolute top-[30%] left-1/2 z-0 h-[min(880px,90vw)] w-[min(880px,90vw)] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(circle_at_center,rgba(255,255,255,0.06)_0%,rgba(255,255,255,0.02)_40%,transparent_70%)]"
+			/>
 
-			<div className={styles.inner}>
-				<SectionTitle title="Impact at a Glance" />
+			<div className="relative z-10 mx-auto grid w-full max-w-6xl gap-[clamp(40px,6vw,72px)]">
+				<SectionTitle subtitle={HOME.eybrow} title={HOME.title} />
 
-				<div data-reveal="" className={styles.narrative}>
-					<h3 id="impact-heading" className={styles.heading}>
-						Experience That Drives Business Growth
-					</h3>
-					<p className={styles.lede}>
-						Nearly two decades of experience in{" "}
-						<strong>business consulting, performance coaching, leadership development, sales coaching, and entrepreneurship</strong>
-						, helping individuals, entrepreneurs, and organisations achieve stronger performance and sustainable
-						growth across <strong>India and the GCC</strong>.
-					</p>
+				<div data-reveal="" className="grid max-w-240 gap-5">
+					<SectionTitle as="h5">{HOME.subTitle}</SectionTitle>
+					<Desc data-reveal="" data={HOME.desc} />
 				</div>
+				<ul
+					ref={statsRef}
+					className="grid list-none grid-cols-1 gap-[clamp(18px,2vw,28px)] sm:grid-cols-2 lg:grid-cols-3">
+					{HOME?.STATS.map((stat) => (
+						<li data-card="" key={stat.label}>
+							<Card cardClass={"relative grid gap-3"}>
+								<p className="flex flex-wrap items-baseline gap-1.5 text-xxl font-extrabold leading-none tracking-[-0.04em] tabular-nums text-foreground">
+									{stat.value != null ? (
+										<span data-count={stat.value}>
+											{formatValue(stat.value)}
+										</span>
+									) : (
+										<span>{stat.display}</span>
+									)}
+									{stat.suffix ? (
+										<span className="text-md font-bold tracking-[-0.01em] text-foreground/62">
+											{stat.suffix}
+										</span>
+									) : null}
+								</p>
 
-				<ul ref={statsRef} className={styles.grid}>
-					{STATS.map((stat) => (
-						<li data-card="" className={styles.card} key={stat.label}>
-							<p className={styles.value}>
-								{stat.value != null ? (
-									<span data-count={stat.value}>{formatValue(stat.value)}</span>
-								) : (
-									<span>{stat.display}</span>
-								)}
-								{stat.suffix ? <span className={styles.suffix}>{stat.suffix}</span> : null}
-							</p>
+								<h4 className="mt-1 text-sm font-bold leading-[1.3] tracking-[0.12em] text-foreground/90 uppercase">
+									{stat.label}
+								</h4>
 
-							<h4 className={styles.label}>{stat.label}</h4>
-
-							<p className={styles.description}>{stat.description}</p>
+								<p className="text-sm leading-[1.55] text-foreground-secondary">
+									{stat.description}
+								</p>
+							</Card>
 						</li>
 					))}
 				</ul>

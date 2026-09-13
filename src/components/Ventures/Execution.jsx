@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function Execution() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Building Through Execution" />
 		</div>
-  );
+	);
 }
 
-export default Execution
+export default Execution;

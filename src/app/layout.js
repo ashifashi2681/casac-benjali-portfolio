@@ -35,7 +35,7 @@ export default function RootLayout({ children }) {
 }
 
 /* 
-refer my current theme and animations. complete this selected section. use tailwind not css module for this section. if any images required for this secion, keep it blank. i'll add it later.
+refer my current theme, animations, global.css. complete this selected section. use tailwind not css module for this section. if any images required for this secion, keep it blank. i'll add it later.
 */
 
-/* full seo friedly content only for "My Expertise". make the contents short, becouse i have lots of other sections and thats make page too long. don't generate images. while generating content, structure the content based on 'what premium animated section look like.' */
+/*Page: Aboutus. section: 1. -- full seo friedly content only for "My Expertise". make the contents short, becouse i have lots of other sections and thats make page too long. don't generate sample images. if while generating content, structure the content based on 'what premium animated section look like.' */

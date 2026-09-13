@@ -1,11 +1,13 @@
 "use client";
 
 import { useRef } from "react";
-import SectionTitle from "../ui/SectionTitle/SectionTitle";
+import SectionTitle from "../ui/SectionTitle";
 import { gsap, ScrollTrigger } from "@/animations/gsap";
 import { useGsap } from "@/hooks/useGsap";
+import { EXPERTISE } from "@/data/home";
+import Desc from "../ui/Desc";
 
-const EXPERTISE = [
+const EXPERTIS = [
 	{
 		num: "01",
 		title: "Strategic Consultant",
@@ -102,7 +104,7 @@ const EXPERTISE = [
 	},
 ];
 
-const TOTAL = EXPERTISE.length;
+const TOTAL = EXPERTIS.length;
 
 function MyExpertise() {
 	const rootRef = useRef(null);
@@ -181,7 +183,7 @@ function MyExpertise() {
 				});
 
 				if (progressCurrent) {
-					progressCurrent.textContent = EXPERTISE[index].num;
+					progressCurrent.textContent = EXPERTIS[index].num;
 				}
 			};
 
@@ -247,45 +249,17 @@ function MyExpertise() {
 
 	return (
 		<section ref={rootRef} className="relative w-full bg-[#050505]">
-			{/*
-			 * ------------------------------------------------------------------
-			 * SECTION ENTRY
-			 * ------------------------------------------------------------------
-			 */}
+		
 			<div className="w-full px-[clamp(24px,7vw,120px)] py-[clamp(96px,12vw,180px)]">
 				<div className="mx-auto grid w-full max-w-[72rem] gap-[clamp(36px,5vw,64px)]">
-					<SectionTitle title="My Expertise" />
+					<SectionTitle subtitle={EXPERTISE.eybrow} title={EXPERTISE.title} />
 
 					<div className="grid gap-6">
-						<h3
-							data-reveal=""
-							className="m-0 text-[clamp(1.6rem,1.1rem+2vw,3rem)] font-bold leading-[1.06] tracking-[-0.02em] text-slate-50">
-							Expertise Built on Experience. Focused on
-							Performance.
-						</h3>
-
+						<SectionTitle as="h5" title={EXPERTISE.subTitle}/>
 						<div
 							data-reveal=""
 							className="grid gap-5 text-[clamp(0.95rem,0.85rem+0.35vw,1.15rem)] leading-[1.7] text-slate-400">
-							<p className="m-0">
-								From strategic consulting and business coaching
-								to sales, leadership, entrepreneurship, and
-								professional training, Casac Benjali brings
-								together practical business experience and
-								strategic thinking to help people and
-								organisations perform at their best.
-							</p>
-							<p className="m-0">
-								With experience across{" "}
-								<strong className="font-semibold text-slate-50">
-									India and the GCC
-								</strong>
-								, his work focuses on turning business
-								challenges into practical strategies, developing
-								high-performing leaders and teams, strengthening
-								sales performance, and creating sustainable
-								business growth.
-							</p>
+							<Desc data={EXPERTISE.desc} />
 						</div>
 					</div>
 				</div>
@@ -299,7 +273,7 @@ function MyExpertise() {
 			<div data-stage-scroll="" className="relative h-[700vh]">
 				<div className="sticky top-0 h-screen overflow-hidden">
 					{/* per-step background tint layers */}
-					{EXPERTISE.map((item, i) => (
+					{EXPERTIS?.map((item, i) => (
 						<span
 							data-tint=""
 							aria-hidden="true"
@@ -313,7 +287,7 @@ function MyExpertise() {
 					))}
 
 					<div className="relative z-1 mx-auto grid h-full w-full max-w-[80rem] content-center px-[clamp(24px,7vw,120px)]">
-						{EXPERTISE.map((item, i) => (
+						{EXPERTIS?.map((item, i) => (
 							<div
 								data-layer=""
 								key={item.num}
@@ -361,10 +335,10 @@ function MyExpertise() {
 						<div className="flex items-baseline justify-between text-xs font-bold uppercase tracking-[0.18em] text-slate-500">
 							<span>
 								<span data-progress-current="">
-									{EXPERTISE[0].num}
+									{EXPERTIS[0].num}
 								</span>
 								<span aria-hidden="true"> / </span>
-								<span>{EXPERTISE[TOTAL - 1].num}</span>
+								<span>{EXPERTIS[TOTAL - 1].num}</span>
 							</span>
 							<span className="hidden sm:inline">
 								Scroll to explore

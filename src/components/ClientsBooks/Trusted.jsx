@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function Trusted() {
-  return (
+	return (
 		<div className="mt-40">
 			<SectionTitle title="Trusted by Businesses & Business Leaders" />
 		</div>
-  );
+	);
 }
 
-export default Trusted
+export default Trusted;

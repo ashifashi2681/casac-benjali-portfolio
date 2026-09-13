@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef } from "react";
+import { usePathname } from "next/navigation";
+import Link from "next/link";
 import { gsap } from "@/animations/gsap";
 import styles from "./Header.module.css";
-import Link from "next/link";
 
 const navItems = [
 	{ label: "Home", href: "/" },
@@ -14,12 +15,29 @@ const navItems = [
 	{ label: "Work With Me", href: "/contact" },
 ];
 
+// Glass bleed around the active item, in px (half the indicator's extra width).
+const INDICATOR_BLEED = 18;
+const INDICATOR_HEIGHT = 100;
+
+function getActiveIndex(pathname) {
+	if (!pathname) return -1;
+
+	const normalizedPathname = pathname.replace(/\/+$/, "") || "/";
+	return navItems.findIndex((item) => item.href === normalizedPathname);
+}
+
 function Header() {
+	const pathname = usePathname();
 	const railRef = useRef(null);
 	const indicatorRef = useRef(null);
 	const itemRefs = useRef([]);
 	const reduceMotionRef = useRef(false);
-	const [activeIndex, setActiveIndex] = useState(0);
+	const glowFrameRef = useRef(0);
+	const latestPointerRef = useRef(null);
+
+	// Derived from the current route (not click state) so the liquid pill never
+	// desyncs after client-side navigation. -1 hides it on unknown routes.
+	const activeIndex = getActiveIndex(pathname);
 
 	useEffect(() => {
 		const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -32,30 +50,42 @@ function Header() {
 
 		return () => {
 			reduceMotion.removeEventListener("change", updateMotion);
+
+			if (glowFrameRef.current) {
+				window.cancelAnimationFrame(glowFrameRef.current);
+				glowFrameRef.current = 0;
+			}
 		};
 	}, []);
 
 	useEffect(() => {
 		const rail = railRef.current;
 		const indicator = indicatorRef.current;
-		const activeItem = itemRefs.current[activeIndex];
+		const activeItem = activeIndex >= 0 ? itemRefs.current[activeIndex] : null;
 
-		if (!rail || !indicator || !activeItem) return;
+		if (!rail || !indicator) return;
+
+		if (!activeItem) {
+			// No nav item matches the current route — hide the liquid pill.
+			gsap.killTweensOf(indicator);
+			gsap.set(indicator, { autoAlpha: 0 });
+			return;
+		}
 
 		const moveIndicator = () => {
 			const railRect = rail.getBoundingClientRect();
 			const itemRect = activeItem.getBoundingClientRect();
-			const x = itemRect.left - railRect.left - 18;
-			const width = itemRect.width + 36;
-			const height = activeItem.classList.contains(styles.itemActive) ? 100 : 84;
+			const x = itemRect.left - railRect.left - rail.clientLeft - INDICATOR_BLEED;
+			const width = itemRect.width + INDICATOR_BLEED * 2;
 
 			if (reduceMotionRef.current) {
 				gsap.set(indicator, {
 					x,
 					width,
-					height,
+					height: INDICATOR_HEIGHT,
 					yPercent: -50,
 					scale: 1,
+					autoAlpha: 1,
 				});
 				return;
 			}
@@ -63,9 +93,10 @@ function Header() {
 			gsap.to(indicator, {
 				x,
 				width,
-				height,
+				height: INDICATOR_HEIGHT,
 				yPercent: -50,
 				scale: 1,
+				autoAlpha: 1,
 				duration: 0.78,
 				ease: "elastic.out(1, 0.62)",
 				overwrite: true,
@@ -99,24 +130,42 @@ function Header() {
 		};
 	}, [activeIndex]);
 
-	const handleRailPointerMove = (event) => {
+	// The rail glow uses rail-relative coordinates, while the glow inside the
+	// liquid pill uses pill-relative ones — reusing the rail's coordinates on
+	// the (translated, much smaller) pill is what misaligned it before.
+	const applyPointerGlow = (clientX, clientY) => {
 		const rail = railRef.current;
-		if (!rail) return;
+		const indicator = indicatorRef.current;
+		if (!rail || !indicator) return;
 
-		const rect = rail.getBoundingClientRect();
-		rail.style.setProperty("--pointer-x", `${event.clientX - rect.left}px`);
-		rail.style.setProperty("--pointer-y", `${event.clientY - rect.top}px`);
+		const railRect = rail.getBoundingClientRect();
+		rail.style.setProperty("--glow-x", `${clientX - railRect.left}px`);
+		rail.style.setProperty("--glow-y", `${clientY - railRect.top}px`);
+
+		const indicatorRect = indicator.getBoundingClientRect();
+		indicator.style.setProperty(
+			"--pointer-x",
+			`${clientX - indicatorRect.left}px`
+		);
+		indicator.style.setProperty(
+			"--pointer-y",
+			`${clientY - indicatorRect.top}px`
+		);
 	};
 
-	const handleItemClick = (event, index) => {
-		setActiveIndex(index);
+	const handleRailPointerMove = (event) => {
+		latestPointerRef.current = { x: event.clientX, y: event.clientY };
 
-		if (!navItems[index].href.startsWith("#")) return;
+		if (glowFrameRef.current) return;
 
-		const section = document.querySelector(navItems[index].href);
-		if (!section) {
-			event.preventDefault();
-		}
+		glowFrameRef.current = window.requestAnimationFrame(() => {
+			glowFrameRef.current = 0;
+
+			const pointer = latestPointerRef.current;
+			if (pointer) {
+				applyPointerGlow(pointer.x, pointer.y);
+			}
+		});
 	};
 
 	return (
@@ -129,8 +178,9 @@ function Header() {
 					<span
 						ref={indicatorRef}
 						className={styles.indicator}
-						aria-hidden="true"
-					/>
+						aria-hidden="true">
+						<span className={styles.indicatorGlow} />
+					</span>
 
 					{navItems.map((item, index) => (
 						<Link
@@ -144,19 +194,13 @@ function Header() {
 							aria-current={
 								activeIndex === index ? "page" : undefined
 							}
-							key={item.href}
-							onClick={(event) => handleItemClick(event, index)}>
-							{activeIndex !== index ? (
-								<span
-									className={styles.icon}
-									aria-hidden="true">
-									{item.label}
-								</span>
-							) : (
-								<span className={styles.label}>
-									{item.label}
-								</span>
-							)}
+							key={item.href}>
+							<span
+								className={
+									activeIndex === index ? styles.label : styles.icon
+								}>
+								{item.label}
+							</span>
 						</Link>
 					))}
 				</div>

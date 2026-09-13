@@ -1,11 +1,18 @@
 "use client";
 
 import { useRef } from "react";
-import SectionTitle from "../ui/SectionTitle/SectionTitle";
+import SectionTitle from "../ui/SectionTitle";
 import { gsap, ScrollTrigger } from "@/animations/gsap";
 import { useGsap } from "@/hooks/useGsap";
 
-const TRANSFORMATION = ["Potential", "Clarity", "Strategy", "Execution", "Performance", "Growth"];
+const TRANSFORMATION = [
+	"Potential",
+	"Clarity",
+	"Strategy",
+	"Execution",
+	"Performance",
+	"Growth",
+];
 
 const PILLARS = [
 	{
@@ -65,11 +72,31 @@ const PILLARS = [
 ];
 
 const APPROACH = [
-	{ title: "Think Better", description: "Develop clearer thinking, stronger self-awareness, and a strategic mindset." },
-	{ title: "Decide Better", description: "Make more confident and informed business and leadership decisions." },
-	{ title: "Execute Better", description: "Turn strategy into focused action, consistent execution, and measurable progress." },
-	{ title: "Perform Better", description: "Improve personal, team, and business performance through continuous development." },
-	{ title: "Grow Better", description: "Build the capabilities required for sustainable business growth and long-term success." },
+	{
+		title: "Think Better",
+		description:
+			"Develop clearer thinking, stronger self-awareness, and a strategic mindset.",
+	},
+	{
+		title: "Decide Better",
+		description:
+			"Make more confident and informed business and leadership decisions.",
+	},
+	{
+		title: "Execute Better",
+		description:
+			"Turn strategy into focused action, consistent execution, and measurable progress.",
+	},
+	{
+		title: "Perform Better",
+		description:
+			"Improve personal, team, and business performance through continuous development.",
+	},
+	{
+		title: "Grow Better",
+		description:
+			"Build the capabilities required for sustainable business growth and long-term success.",
+	},
 ];
 
 const PROGRAMMES = [
@@ -96,11 +123,26 @@ const PROGRAMMES = [
 ];
 
 const AUDIENCE = [
-	{ who: "Entrepreneurs", why: "looking to build and grow stronger businesses." },
-	{ who: "Business Owners", why: "facing growth, performance, leadership, or operational challenges." },
-	{ who: "Business Professionals", why: "seeking stronger strategic thinking and personal performance." },
-	{ who: "Emerging Leaders", why: "preparing to take greater responsibility and create organisational impact." },
-	{ who: "High-Performance Individuals", why: "who want to move from potential to consistent execution and measurable results." },
+	{
+		who: "Entrepreneurs",
+		why: "looking to build and grow stronger businesses.",
+	},
+	{
+		who: "Business Owners",
+		why: "facing growth, performance, leadership, or operational challenges.",
+	},
+	{
+		who: "Business Professionals",
+		why: "seeking stronger strategic thinking and personal performance.",
+	},
+	{
+		who: "Emerging Leaders",
+		why: "preparing to take greater responsibility and create organisational impact.",
+	},
+	{
+		who: "High-Performance Individuals",
+		why: "who want to move from potential to consistent execution and measurable results.",
+	},
 ];
 
 const REASONS = [
@@ -126,10 +168,10 @@ const REASONS = [
 	},
 	{
 		title: "Business & Personal Growth",
-		description: "Sustainable business growth begins with developing the person behind the business.",
+		description:
+			"Sustainable business growth begins with developing the person behind the business.",
 	},
 ];
-
 
 function PerformanceBusinessCoaching() {
 	const rootRef = useRef(null);
@@ -139,7 +181,9 @@ function PerformanceBusinessCoaching() {
 			const root = rootRef.current;
 			if (!root) return;
 
-			const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+			const reducedMotion = window.matchMedia(
+				"(prefers-reduced-motion: reduce)"
+			).matches;
 
 			/*
 			 * Generic reveals — intro, approach, programmes, audience, reasons, outro.
@@ -268,8 +312,7 @@ function PerformanceBusinessCoaching() {
 					<div className="grid gap-7">
 						<h3
 							data-reveal=""
-							className="m-0 max-w-22ch text-[clamp(1.7rem,1.2rem+2.2vw,3.4rem)] font-bold leading-[1.05] tracking-[-0.03em] text-slate-50"
-						>
+							className="m-0 max-w-22ch text-[clamp(1.7rem,1.2rem+2.2vw,3.4rem)] font-bold leading-[1.05] tracking-[-0.03em] text-slate-50">
 							Transforming Entrepreneurs From{" "}
 							<span className="text-slate-500">Potential</span> to{" "}
 							<span className="bg-gradient-to-r from-slate-100 to-slate-400 bg-clip-text text-transparent">
@@ -279,26 +322,35 @@ function PerformanceBusinessCoaching() {
 
 						<p
 							data-reveal=""
-							className="m-0 max-w-56ch text-sm font-bold uppercase tracking-[0.1em] leading-relaxed text-slate-300"
-						>
-							Build the clarity, confidence, strategy, and execution needed to take your business to the next
+							className="m-0 max-w-56ch text-sm font-bold uppercase tracking-[0.1em] leading-relaxed text-slate-300">
+							Build the clarity, confidence, strategy, and
+							execution needed to take your business to the next
 							level.
 						</p>
 
-						<div data-reveal="" className="grid max-w-62ch gap-5 text-[clamp(0.95rem,0.85rem+0.35vw,1.15rem)] leading-[1.7] text-slate-400">
+						<div
+							data-reveal=""
+							className="grid max-w-62ch gap-5 text-[clamp(0.95rem,0.85rem+0.35vw,1.15rem)] leading-[1.7] text-slate-400">
 							<p className="m-0">
 								Casac Benjali&apos;s{" "}
-								<strong className="font-semibold text-slate-50">Performance Business Coaching</strong> is
-								designed for entrepreneurs, business owners, and professionals who want to move beyond
-								challenges, improve their performance, and achieve sustainable business growth.
+								<strong className="font-semibold text-slate-50">
+									Performance Business Coaching
+								</strong>{" "}
+								is designed for entrepreneurs, business owners,
+								and professionals who want to move beyond
+								challenges, improve their performance, and
+								achieve sustainable business growth.
 							</p>
 							<p className="m-0">
 								With extensive experience in{" "}
 								<strong className="font-semibold text-slate-50">
-									business consulting, entrepreneurship, leadership, sales, and performance coaching
+									business consulting, entrepreneurship,
+									leadership, sales, and performance coaching
 								</strong>
-								, Casac Benjali combines practical business experience with structured coaching to help
-								individuals think strategically, make better decisions, and turn their goals into meaningful
+								, Casac Benjali combines practical business
+								experience with structured coaching to help
+								individuals think strategically, make better
+								decisions, and turn their goals into meaningful
 								action.
 							</p>
 						</div>
@@ -307,23 +359,30 @@ function PerformanceBusinessCoaching() {
 			</div>
 
 			{/* TRANSFORMATION SEQUENCE */}
-			<div data-transformation="" className="relative z-1 mt-[clamp(72px,9vw,140px)] px-[clamp(24px,7vw,120px)]">
+			<div
+				data-transformation=""
+				className="relative z-1 mt-[clamp(72px,9vw,140px)] px-[clamp(24px,7vw,120px)]">
 				<div className="mx-auto grid w-full max-w-[72rem] gap-8">
-					<p data-reveal="" className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+					<p
+						data-reveal=""
+						className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
 						From Where You Are to Where You Want to Be
 					</p>
 
 					<div className="flex flex-wrap items-baseline gap-x-[clamp(16px,3vw,40px)] gap-y-3">
 						{TRANSFORMATION.map((word, i) => (
-							<span key={word} className="inline-flex items-baseline gap-[clamp(16px,3vw,40px)]">
+							<span
+								key={word}
+								className="inline-flex items-baseline gap-[clamp(16px,3vw,40px)]">
 								<span
 									data-word=""
-									className="text-[clamp(1.6rem,1rem+2.6vw,4rem)] font-extrabold leading-none tracking-[-0.04em] text-slate-500"
-								>
+									className="text-[clamp(1.6rem,1rem+2.6vw,4rem)] font-extrabold leading-none tracking-[-0.04em] text-slate-500">
 									{word}
 								</span>
 								{i < TRANSFORMATION.length - 1 ? (
-									<span aria-hidden="true" className="text-[clamp(1rem,0.7rem+1.4vw,2rem)] font-bold text-slate-700">
+									<span
+										aria-hidden="true"
+										className="text-[clamp(1rem,0.7rem+1.4vw,2rem)] font-bold text-slate-700">
 										→
 									</span>
 								) : null}
@@ -331,11 +390,18 @@ function PerformanceBusinessCoaching() {
 						))}
 					</div>
 
-					<p data-reveal="" className="m-0 max-w-64ch leading-[1.7] text-slate-400">
-						Every entrepreneur reaches a point where working harder is no longer enough. Business growth
-						requires the right <strong className="font-semibold text-slate-50">mindset, strategy, leadership, systems, execution, and performance</strong>.
-						Performance Business Coaching helps bridge the gap between your current position and your desired
-						level of personal and business success.
+					<p
+						data-reveal=""
+						className="m-0 max-w-64ch leading-[1.7] text-slate-400">
+						Every entrepreneur reaches a point where working harder
+						is no longer enough. Business growth requires the right{" "}
+						<strong className="font-semibold text-slate-50">
+							mindset, strategy, leadership, systems, execution,
+							and performance
+						</strong>
+						. Performance Business Coaching helps bridge the gap
+						between your current position and your desired level of
+						personal and business success.
 					</p>
 				</div>
 			</div>
@@ -357,19 +423,19 @@ function PerformanceBusinessCoaching() {
 							<li
 								data-pillar=""
 								key={pillar.num}
-								className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-[clamp(18px,3vw,48px)] border-t border-white/8 py-[clamp(22px,3vw,36px)] last:border-b"
-							>
+								className="grid grid-cols-[auto_minmax(0,1fr)] items-baseline gap-[clamp(18px,3vw,48px)] border-t border-white/8 py-[clamp(22px,3vw,36px)] last:border-b">
 								<span
 									aria-hidden="true"
-									className="text-[clamp(1.4rem,1rem+2vw,3rem)] font-extrabold leading-none tracking-[-0.04em] text-white/15 tabular-nums"
-								>
+									className="text-[clamp(1.4rem,1rem+2vw,3rem)] font-extrabold leading-none tracking-[-0.04em] text-white/15 tabular-nums">
 									{pillar.num}
 								</span>
 								<div className="grid gap-3">
 									<h5 className="m-0 text-[clamp(1.15rem,0.95rem+0.9vw,1.8rem)] font-bold leading-tight tracking-[-0.01em] text-slate-50">
 										{pillar.title}
 									</h5>
-									<p className="m-0 max-w-62ch leading-[1.65] text-slate-400">{pillar.description}</p>
+									<p className="m-0 max-w-62ch leading-[1.65] text-slate-400">
+										{pillar.description}
+									</p>
 								</div>
 							</li>
 						))}
@@ -379,13 +445,16 @@ function PerformanceBusinessCoaching() {
 
 			{/* APPROACH */}
 			<div className="relative z-1 mt-[clamp(88px,11vw,160px)] px-[clamp(24px,7vw,120px)]">
-				<div data-group="" className="mx-auto grid w-full max-w-[72rem] gap-[clamp(28px,4vw,48px)]">
+				<div
+					data-group=""
+					className="mx-auto grid w-full max-w-[72rem] gap-[clamp(28px,4vw,48px)]">
 					<div data-reveal="" className="grid gap-4">
 						<p className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
 							A Structured Approach to Business Performance
 						</p>
 						<h4 className="m-0 max-w-40ch text-[clamp(1.4rem,1rem+1.6vw,2.6rem)] font-bold leading-[1.1] tracking-[-0.02em] text-slate-50">
-							Connecting personal development with business performance.
+							Connecting personal development with business
+							performance.
 						</h4>
 					</div>
 
@@ -394,10 +463,13 @@ function PerformanceBusinessCoaching() {
 							<li
 								data-item=""
 								key={step.title}
-								className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-6 backdrop-blur-md transition-colors duration-300 hover:border-white/25 hover:bg-white/[0.06]"
-							>
-								<h5 className="m-0 text-base font-bold tracking-[-0.01em] text-slate-50">{step.title}</h5>
-								<p className="m-0 text-sm leading-[1.6] text-slate-400">{step.description}</p>
+								className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-6 backdrop-blur-md transition-colors duration-300 hover:border-white/25 hover:bg-white/[0.06]">
+								<h5 className="m-0 text-base font-bold tracking-[-0.01em] text-slate-50">
+									{step.title}
+								</h5>
+								<p className="m-0 text-sm leading-[1.6] text-slate-400">
+									{step.description}
+								</p>
 							</li>
 						))}
 					</ul>
@@ -406,9 +478,13 @@ function PerformanceBusinessCoaching() {
 
 			{/* PROGRAMMES */}
 			<div className="relative z-1 mt-[clamp(88px,11vw,160px)] px-[clamp(24px,7vw,120px)]">
-				<div data-group="" className="mx-auto grid w-full max-w-[72rem] gap-[clamp(28px,4vw,48px)]">
+				<div
+					data-group=""
+					className="mx-auto grid w-full max-w-[72rem] gap-[clamp(28px,4vw,48px)]">
 					<div data-reveal="" className="grid gap-4">
-						<p className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">Coaching Programmes</p>
+						<p className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+							Coaching Programmes
+						</p>
 						<h4 className="m-0 text-[clamp(1.4rem,1rem+1.6vw,2.6rem)] font-bold leading-[1.1] tracking-[-0.02em] text-slate-50">
 							Structured Paths to Higher Performance
 						</h4>
@@ -419,12 +495,10 @@ function PerformanceBusinessCoaching() {
 							<li
 								data-item=""
 								key={programme.name}
-								className="group relative grid content-between gap-[clamp(40px,6vw,96px)] overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-[clamp(26px,3.4vw,44px)] backdrop-blur-md transition-colors duration-500 hover:border-white/25 hover:bg-white/[0.06]"
-							>
+								className="group relative grid content-between gap-[clamp(40px,6vw,96px)] overflow-hidden rounded-3xl border border-white/10 bg-white/[0.035] p-[clamp(26px,3.4vw,44px)] backdrop-blur-md transition-colors duration-500 hover:border-white/25 hover:bg-white/[0.06]">
 								<span
 									aria-hidden="true"
-									className="absolute -right-4 -top-6 select-none text-[clamp(5rem,4rem+6vw,9rem)] font-extrabold leading-none tracking-[-0.06em] text-white/[0.05] transition-colors duration-500 group-hover:text-white/[0.1]"
-								>
+									className="absolute -right-4 -top-6 select-none text-[clamp(5rem,4rem+6vw,9rem)] font-extrabold leading-none tracking-[-0.06em] text-white/[0.05] transition-colors duration-500 group-hover:text-white/[0.1]">
 									{String(i + 1).padStart(2, "0")}
 								</span>
 
@@ -443,8 +517,12 @@ function PerformanceBusinessCoaching() {
 
 			{/* AUDIENCE */}
 			<div className="relative z-1 mt-[clamp(88px,11vw,160px)] px-[clamp(24px,7vw,120px)]">
-				<div data-group="" className="mx-auto grid w-full max-w-[72rem] gap-[clamp(24px,3vw,40px)]">
-					<h4 data-reveal="" className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+				<div
+					data-group=""
+					className="mx-auto grid w-full max-w-[72rem] gap-[clamp(24px,3vw,40px)]">
+					<h4
+						data-reveal=""
+						className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
 						Who Is This Coaching For?
 					</h4>
 
@@ -453,9 +531,11 @@ function PerformanceBusinessCoaching() {
 							<li
 								data-item=""
 								key={entry.who}
-								className="max-w-64ch border-l-2 border-white/15 pl-6 text-[clamp(1rem,0.9rem+0.4vw,1.25rem)] leading-[1.6] text-slate-400"
-							>
-								<strong className="font-semibold text-slate-50">{entry.who}</strong> {entry.why}
+								className="max-w-64ch border-l-2 border-white/15 pl-6 text-[clamp(1rem,0.9rem+0.4vw,1.25rem)] leading-[1.6] text-slate-400">
+								<strong className="font-semibold text-slate-50">
+									{entry.who}
+								</strong>{" "}
+								{entry.why}
 							</li>
 						))}
 					</ul>
@@ -464,8 +544,12 @@ function PerformanceBusinessCoaching() {
 
 			{/* WHY */}
 			<div className="relative z-1 mt-[clamp(88px,11vw,160px)] px-[clamp(24px,7vw,120px)]">
-				<div data-group="" className="mx-auto grid w-full max-w-[72rem] gap-[clamp(28px,4vw,48px)]">
-					<h4 data-reveal="" className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
+				<div
+					data-group=""
+					className="mx-auto grid w-full max-w-[72rem] gap-[clamp(28px,4vw,48px)]">
+					<h4
+						data-reveal=""
+						className="m-0 text-xs font-bold uppercase tracking-[0.16em] text-slate-500">
 						Why Performance Business Coaching?
 					</h4>
 
@@ -474,10 +558,13 @@ function PerformanceBusinessCoaching() {
 							<li
 								data-item=""
 								key={reason.title}
-								className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-6 backdrop-blur-md transition-colors duration-300 hover:border-white/25 hover:bg-white/[0.06]"
-							>
-								<h5 className="m-0 text-base font-bold tracking-[-0.01em] text-slate-50">{reason.title}</h5>
-								<p className="m-0 text-sm leading-[1.6] text-slate-400">{reason.description}</p>
+								className="grid gap-3 rounded-2xl border border-white/10 bg-white/[0.035] p-6 backdrop-blur-md transition-colors duration-300 hover:border-white/25 hover:bg-white/[0.06]">
+								<h5 className="m-0 text-base font-bold tracking-[-0.01em] text-slate-50">
+									{reason.title}
+								</h5>
+								<p className="m-0 text-sm leading-[1.6] text-slate-400">
+									{reason.description}
+								</p>
 							</li>
 						))}
 					</ul>
@@ -486,7 +573,9 @@ function PerformanceBusinessCoaching() {
 
 			{/* CLOSING + CTA */}
 			<div className="relative z-1 w-full px-[clamp(24px,7vw,120px)] py-[clamp(96px,12vw,180px)]">
-				<div data-outro="" className="mx-auto grid w-full max-w-[72rem] gap-[clamp(28px,4vw,48px)]">
+				<div
+					data-outro=""
+					className="mx-auto grid w-full max-w-[72rem] gap-[clamp(28px,4vw,48px)]">
 					<div className="grid gap-5">
 						<h4 className="m-0 text-[clamp(2rem,1.3rem+3.4vw,4.8rem)] font-extrabold leading-[1.02] tracking-[-0.04em] text-slate-50">
 							Better Thinking.
@@ -503,28 +592,37 @@ function PerformanceBusinessCoaching() {
 						</h5>
 
 						<p className="m-0 max-w-64ch leading-[1.7] text-slate-400">
-							Whether you are building a new business, navigating a growth challenge, strengthening your
-							leadership, improving performance, or preparing your organisation for the next stage,
-							Performance Business Coaching provides a structured path towards greater clarity, capability,
-							and execution.
+							Whether you are building a new business, navigating
+							a growth challenge, strengthening your leadership,
+							improving performance, or preparing your
+							organisation for the next stage, Performance
+							Business Coaching provides a structured path towards
+							greater clarity, capability, and execution.
 						</p>
 					</div>
 
 					<div className="flex flex-wrap items-center gap-x-8 gap-y-4">
 						{[
-							{ label: "Enquire About Performance Business Coaching", href: "/contact" },
-							{ label: "Explore Coaching Programmes", href: "/programmes" },
+							{
+								label: "Enquire About Performance Business Coaching",
+								href: "/contact",
+							},
+							{
+								label: "Explore Coaching Programmes",
+								href: "/programmes",
+							},
 							{ label: "Book a Consultation", href: "/contact" },
 						].map((link) => (
 							<a
 								key={link.label}
 								href={link.href}
-								className="group inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.14em] text-slate-50 transition-colors duration-300 hover:text-white"
-							>
+								className="group inline-flex items-center gap-2 text-sm font-bold uppercase tracking-[0.14em] text-slate-50 transition-colors duration-300 hover:text-white">
 								<span className="border-b border-white/25 pb-1 transition-colors duration-300 group-hover:border-white/70">
 									{link.label}
 								</span>
-								<span aria-hidden="true" className="inline-block transition-transform duration-300 group-hover:translate-x-1">
+								<span
+									aria-hidden="true"
+									className="inline-block transition-transform duration-300 group-hover:translate-x-1">
 									→
 								</span>
 							</a>
@@ -537,4 +635,3 @@ function PerformanceBusinessCoaching() {
 }
 
 export default PerformanceBusinessCoaching;
-

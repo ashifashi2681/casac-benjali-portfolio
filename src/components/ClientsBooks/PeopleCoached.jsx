@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function PeopleCoached() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="500,000+ People Coached & Trained" />
 		</div>
-  );
+	);
 }
 
-export default PeopleCoached
+export default PeopleCoached;

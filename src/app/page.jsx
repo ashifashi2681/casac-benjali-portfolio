@@ -15,8 +15,8 @@ export default function Home() {
 	return (
 		<div className="bg-amber-800">
 			{/* <Hero /> */}
-			<ImpactAtAGlance />
 			<AboutCasacBenjali />
+			<ImpactAtAGlance />
 			<MyExpertise />
 			<PerformanceBusinessCoaching />
 			<StrategicConsulting />

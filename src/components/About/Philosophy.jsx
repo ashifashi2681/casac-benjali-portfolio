@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function Philosophy() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="The Philosophy Behind My Work" />
 		</div>
-  );
+	);
 }
 
-export default Philosophy
+export default Philosophy;

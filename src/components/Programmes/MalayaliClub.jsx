@@ -1,12 +1,12 @@
-import React from 'react'
-import SectionTitle from '../ui/SectionTitle/SectionTitle';
+import React from "react";
+import SectionTitle from "../ui/SectionTitle";
 
 function MalayaliClub() {
-  return (
+	return (
 		<div>
 			<SectionTitle title="Malayali Business Club" />
 		</div>
-  );
+	);
 }
 
-export default MalayaliClub
+export default MalayaliClub;
